@@ -1,4 +1,4 @@
-import csv, hashlib, io, json, os, sqlite3, tempfile
+import csv, hashlib, io, json, os, sqlite3, tempfile, secrets, time
 from email import policy
 from email.parser import BytesParser
 from datetime import datetime, timedelta
@@ -9,7 +9,24 @@ ROOT=os.path.dirname(os.path.abspath(__file__)); DB=os.path.join(ROOT,'finance.d
 COLS=['stat_date','department','manager','promotion_leader','promotion_group','product_name','actual_sales','operating_cost','goods_cost','express_fee','onsite_promotion_fee','pugongying_fee','qianfan_fee','content_comment_fee','dou_plus_fee','props_competitor_fee','qa_fee','member_fee','other_fee','profit']
 NUMERIC=COLS[6:]
 def db():
- c=sqlite3.connect(DB); c.row_factory=sqlite3.Row; c.execute('''CREATE TABLE IF NOT EXISTS product_profit_daily (id INTEGER PRIMARY KEY, stat_date TEXT NOT NULL, department TEXT, manager TEXT, promotion_leader TEXT, promotion_group TEXT, product_name TEXT NOT NULL, actual_sales REAL DEFAULT 0, operating_cost REAL DEFAULT 0, goods_cost REAL DEFAULT 0, express_fee REAL DEFAULT 0, onsite_promotion_fee REAL DEFAULT 0, pugongying_fee REAL DEFAULT 0, qianfan_fee REAL DEFAULT 0, content_comment_fee REAL DEFAULT 0, dou_plus_fee REAL DEFAULT 0, props_competitor_fee REAL DEFAULT 0, qa_fee REAL DEFAULT 0, member_fee REAL DEFAULT 0, other_fee REAL DEFAULT 0, profit REAL DEFAULT 0, source_sheet TEXT, source_hash TEXT, created_at TEXT, updated_at TEXT, UNIQUE(stat_date, department, manager, product_name))'''); c.commit(); return c
+ c=sqlite3.connect(DB); c.row_factory=sqlite3.Row; c.execute('''CREATE TABLE IF NOT EXISTS product_profit_daily (id INTEGER PRIMARY KEY, stat_date TEXT NOT NULL, department TEXT, manager TEXT, promotion_leader TEXT, promotion_group TEXT, product_name TEXT NOT NULL, actual_sales REAL DEFAULT 0, operating_cost REAL DEFAULT 0, goods_cost REAL DEFAULT 0, express_fee REAL DEFAULT 0, onsite_promotion_fee REAL DEFAULT 0, pugongying_fee REAL DEFAULT 0, qianfan_fee REAL DEFAULT 0, content_comment_fee REAL DEFAULT 0, dou_plus_fee REAL DEFAULT 0, props_competitor_fee REAL DEFAULT 0, qa_fee REAL DEFAULT 0, member_fee REAL DEFAULT 0, other_fee REAL DEFAULT 0, profit REAL DEFAULT 0, source_sheet TEXT, source_hash TEXT, created_at TEXT, updated_at TEXT, UNIQUE(stat_date, department, manager, product_name))'''); c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, created_at TEXT NOT NULL)'''); c.execute('''CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL, created_at TEXT NOT NULL)'''); c.commit(); return c
+
+LOGIN_ATTEMPTS={}
+SESSION_DAYS=7
+def password_hash(password,salt=None):
+ salt=salt or secrets.token_hex(16)
+ return salt,hashlib.pbkdf2_hmac('sha256',password.encode(),salt.encode(),210000).hex()
+def valid_password(password):return isinstance(password,str) and 8<=len(password)<=128
+def json_body(handler):
+ length=int(handler.headers.get('Content-Length','0') or 0)
+ return json.loads(handler.rfile.read(length) or b'{}')
+def client_key(handler):return handler.client_address[0]
+def session_user(c,handler):
+ cookie=handler.headers.get('Cookie','')
+ token=next((x.split('=',1)[1] for x in cookie.split(';') if x.strip().startswith('finance_session=')), '')
+ if not token:return None
+ row=c.execute('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?',(hashlib.sha256(token.encode()).hexdigest(),int(time.time()))).fetchone()
+ return row
 def num(x):
  try:return round(float(str(x or 0).replace(',','').replace('￥','')),2)
  except:return 0
@@ -43,11 +60,16 @@ def payload(c,start_date='',end_date=''):
 class Handler(SimpleHTTPRequestHandler):
  def __init__(self,*a,**kw):super().__init__(*a,directory=ROOT,**kw)
  def send_json(self,data,status=200):
-  raw=json.dumps(data,ensure_ascii=False).encode();self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Access-Control-Allow-Origin','*');self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
- def do_OPTIONS(self):self.send_response(204);self.send_header('Access-Control-Allow-Origin','*');self.send_header('Access-Control-Allow-Methods','GET,POST,OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type');self.end_headers()
+  raw=json.dumps(data,ensure_ascii=False).encode();self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8');origin=self.headers.get('Origin','');self.send_header('Access-Control-Allow-Origin',origin if origin in ('http://127.0.0.1:5173','http://localhost:5173') else 'http://127.0.0.1:5173');self.send_header('Access-Control-Allow-Credentials','true');self.send_header('Vary','Origin');self.send_header('X-Content-Type-Options','nosniff');self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+ def do_OPTIONS(self):self.send_response(204);self.send_header('Access-Control-Allow-Origin',self.headers.get('Origin','http://127.0.0.1:5173'));self.send_header('Access-Control-Allow-Credentials','true');self.send_header('Access-Control-Allow-Methods','GET,POST,OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type');self.end_headers()
  def do_GET(self):
   path=urlparse(self.path).path;c=db();sample_seed(c)
   if path=='/api/health':return self.send_json({'ok':True,'version':'1.0.0','database':'sqlite'})
+  if path=='/api/auth/status':return self.send_json({'setup_required':c.execute('SELECT COUNT(*) FROM users').fetchone()[0]==0})
+  if path=='/api/auth/me':
+   user=session_user(c,self)
+   return self.send_json({'authenticated':bool(user),'user':{'id':user['id'],'username':user['username']} if user else None},200 if user else 401)
+  if path.startswith('/api/') and not session_user(c,self):return self.send_json({'error':'请先登录'},401)
   if path=='/api/summary':
    from urllib.parse import parse_qs
    query=parse_qs(urlparse(self.path).query); start=query.get('start_date',[''])[0]; end=query.get('end_date',['']); end=end[0] if end else ''
@@ -55,7 +77,28 @@ class Handler(SimpleHTTPRequestHandler):
   if path=='/api/profit-rows':return self.send_json({'rows':[dict(r) for r in c.execute('SELECT * FROM product_profit_daily ORDER BY stat_date DESC,id').fetchall()]})
   return super().do_GET()
  def do_POST(self):
-  if self.path!='/api/import':self.send_error(404);return
+  c=db();path=urlparse(self.path).path
+  if path=='/api/auth/setup':
+   if c.execute('SELECT COUNT(*) FROM users').fetchone()[0]:return self.send_json({'error':'管理员账号已创建'},409)
+   try:data=json_body(self);username=str(data.get('username','')).strip();password=data.get('password','')
+   except:return self.send_json({'error':'请求格式错误'},400)
+   if len(username)<3 or len(username)>32 or not valid_password(password):return self.send_json({'error':'账号至少 3 位，密码至少 8 位'},400)
+   salt,hashed=password_hash(password);c.execute('INSERT INTO users(username,password_hash,password_salt,created_at) VALUES(?,?,?,?)',(username,hashed,salt,datetime.now().isoformat()));c.commit();return self.send_json({'ok':True})
+  if path=='/api/auth/login':
+   try:data=json_body(self);username=str(data.get('username','')).strip();password=data.get('password','')
+   except:return self.send_json({'error':'请求格式错误'},400)
+   key=client_key(self)+':'+username;now=time.time();attempts=[x for x in LOGIN_ATTEMPTS.get(key,[]) if now-x<900];LOGIN_ATTEMPTS[key]=attempts
+   if len(attempts)>=5:return self.send_json({'error':'登录失败次数过多，请 15 分钟后再试'},429)
+   user=c.execute('SELECT * FROM users WHERE username=?',(username,)).fetchone();ok=False
+   if user:ok=secrets.compare_digest(password_hash(password,user['password_salt'])[1],user['password_hash'])
+   if not ok:LOGIN_ATTEMPTS[key]=attempts+[now];return self.send_json({'error':'账号或密码错误'},401)
+   token=secrets.token_urlsafe(32);expires=int(time.time()+SESSION_DAYS*86400);c.execute('INSERT INTO sessions(token_hash,user_id,expires_at,created_at) VALUES(?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),user['id'],expires,datetime.now().isoformat()));c.commit();self.send_response(200);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Set-Cookie',f'finance_session={token}; HttpOnly; SameSite=Lax; Max-Age={SESSION_DAYS*86400}; Path=/');self.send_header('Access-Control-Allow-Origin',self.headers.get('Origin','http://127.0.0.1:5173'));self.send_header('Access-Control-Allow-Credentials','true');self.end_headers();self.wfile.write(json.dumps({'ok':True,'user':{'username':user['username']}},ensure_ascii=False).encode());return
+  if path=='/api/auth/logout':
+   user=session_user(c,self);cookie=self.headers.get('Cookie','');token=next((x.split('=',1)[1] for x in cookie.split(';') if x.strip().startswith('finance_session=')), '')
+   if token:c.execute('DELETE FROM sessions WHERE token_hash=?',(hashlib.sha256(token.encode()).hexdigest(),));c.commit()
+   self.send_response(200);self.send_header('Set-Cookie','finance_session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/');self.send_header('Content-Type','application/json; charset=utf-8');self.end_headers();self.wfile.write(b'{"ok":true}');return
+  if path!='/api/import':self.send_error(404);return
+  if not session_user(c,self):return self.send_json({'error':'请先登录'},401)
   try:
    length=int(self.headers.get('Content-Length','0')); body=self.rfile.read(length); envelope=(f"Content-Type: {self.headers.get('Content-Type','')}\r\nMIME-Version: 1.0\r\n\r\n").encode()+body; message=BytesParser(policy=policy.default).parsebytes(envelope); item=next((p for p in message.iter_parts() if p.get_param('name',header='Content-Disposition')=='file'),None)
    if item is None: raise ValueError('未找到上传文件')

@@ -10,7 +10,7 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
-import App from "./App";
+import AuthGate from "./AuthGate";
 import Dashboard from "./pages/finance/Dashboard";
 import ProfitTable from "./pages/finance/ProfitTable";
 import ImportData from "./pages/finance/ImportData";
@@ -20,7 +20,7 @@ import AnalysisV3 from "./pages/finance/AnalysisV3";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<App />}>
+    <Route path="/" element={<AuthGate />}>
       <Route index element={<Dashboard />} />
       <Route path="profit-table" element={<ProfitTable />} />
       <Route path="import" element={<ImportData />} />
