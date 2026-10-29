@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+frontend_shell/node_modules/
+frontend_shell/.git.local-backup/
+frontend_shell/dist/
+node_modules/
+dist/
+*.log

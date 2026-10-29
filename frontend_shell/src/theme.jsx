@@ -1,0 +1,48 @@
+export const getDesignTokens = (mode = "light") => ({
+  palette: {
+    mode,
+    primary: { main: "#157a62", light: "#55b79a", dark: "#0d5947", contrastText: "#fff" },
+    secondary: { main: "#f2a46f" },
+    background: { default: "#f7f9f8", paper: "#ffffff" },
+    text: { primary: "#17362c", secondary: "#6d8279" },
+    divider: "#dfe8e3",
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+          borderRadius: 6,
+          transition: "background-color 0.15s ease, border-color 0.15s ease",
+          boxShadow: "none",
+          fontWeight: 700,
+          "&:hover": {
+            boxShadow: "none",
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          border: "1px solid #dfe8e3",
+          borderRadius: 8,
+          boxShadow: "none",
+          transition: "box-shadow 0.2s ease, background-color 0.2s ease",
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          transition: "background-color 0.15s ease",
+        },
+      },
+    },
+    MuiTextField: { defaultProps: { variant: "outlined" } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 6, backgroundColor: "#fff" } } },
+    MuiTableCell: { styleOverrides: { head: { backgroundColor: "#eef7f2", color: "#157a62", fontWeight: 700 } } },
+  },
+  shape: { borderRadius: 8 },
+  typography: { fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif', h4: { letterSpacing: "-0.01em", fontWeight: 700 }, h6: { letterSpacing: 0, fontWeight: 700 } },
+});

@@ -1,0 +1,104 @@
+import csv, hashlib, io, json, os, sqlite3, tempfile
+from email import policy
+from email.parser import BytesParser
+from datetime import datetime, timedelta
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse
+
+ROOT=os.path.dirname(os.path.abspath(__file__)); DB=os.path.join(ROOT,'finance.db')
+COLS=['stat_date','department','manager','promotion_leader','promotion_group','product_name','actual_sales','operating_cost','goods_cost','express_fee','onsite_promotion_fee','pugongying_fee','qianfan_fee','content_comment_fee','dou_plus_fee','props_competitor_fee','qa_fee','member_fee','other_fee','profit']
+NUMERIC=COLS[6:]
+def db():
+ c=sqlite3.connect(DB); c.row_factory=sqlite3.Row; c.execute('''CREATE TABLE IF NOT EXISTS product_profit_daily (id INTEGER PRIMARY KEY, stat_date TEXT NOT NULL, department TEXT, manager TEXT, promotion_leader TEXT, promotion_group TEXT, product_name TEXT NOT NULL, actual_sales REAL DEFAULT 0, operating_cost REAL DEFAULT 0, goods_cost REAL DEFAULT 0, express_fee REAL DEFAULT 0, onsite_promotion_fee REAL DEFAULT 0, pugongying_fee REAL DEFAULT 0, qianfan_fee REAL DEFAULT 0, content_comment_fee REAL DEFAULT 0, dou_plus_fee REAL DEFAULT 0, props_competitor_fee REAL DEFAULT 0, qa_fee REAL DEFAULT 0, member_fee REAL DEFAULT 0, other_fee REAL DEFAULT 0, profit REAL DEFAULT 0, source_sheet TEXT, source_hash TEXT, created_at TEXT, updated_at TEXT, UNIQUE(stat_date, department, manager, product_name))'''); c.commit(); return c
+def num(x):
+ try:return round(float(str(x or 0).replace(',','').replace('￥','')),2)
+ except:return 0
+def excel_date(v):
+ if isinstance(v,(int,float)): return (datetime(1899,12,30)+timedelta(days=int(v))).strftime('%Y-%m-%d')
+ return str(v or '')
+def sample_seed(c):
+ return
+ if c.execute('SELECT 1 FROM product_profit_daily LIMIT 1').fetchone(): return
+ rows=[]
+ for date, vals in [('2026-10-26',[88524.88,7928,-16514.88]),('2026-10-27',[94842.94,8310.98,29448.86])]:
+  rows.append((date,'演示部门','演示主管','演示组长','',f'演示产品 {date}',vals[0],0,vals[1],0,0,0,0,0,0,0,0,0,0,vals[2],'demo','demo',datetime.now().isoformat(),datetime.now().isoformat()))
+ c.executemany('INSERT INTO product_profit_daily VALUES (NULL,'+','.join('?'*24)+')',rows); c.commit()
+def payload(c,start_date='',end_date=''):
+ clauses=[]; params=[]
+ if start_date: clauses.append('stat_date>=?'); params.append(start_date)
+ if end_date: clauses.append('stat_date<=?'); params.append(end_date)
+ where=(' WHERE '+' AND '.join(clauses)) if clauses else ''
+ rows=c.execute('SELECT * FROM product_profit_daily'+where+' ORDER BY stat_date DESC, id',params).fetchall(); d=[dict(r) for r in rows]
+ def total(k):return round(sum((r[k] or 0) for r in d),2)
+ revenue=total('actual_sales'); cost=total('goods_cost'); expense=round(total('operating_cost')+sum(total(k) for k in ['express_fee','onsite_promotion_fee','pugongying_fee','qianfan_fee','content_comment_fee','dou_plus_fee','props_competitor_fee','qa_fee','member_fee','other_fee']),2); profit=total('profit')
+ def group(key):
+  out={}
+  for r in d:
+   g=out.setdefault(r[key] or '未分类',{'name':r[key] or '未分类','revenue':0,'profit':0});g['revenue']+=r['actual_sales'];g['profit']+=r['profit']
+  return sorted(out.values(),key=lambda x:x['profit'],reverse=True)
+ by_date=[{'stat_date':x['name'],'revenue':round(x['revenue'],2),'profit':round(x['profit'],2)} for x in group('stat_date')]
+ by_product=[{'product_name':x['name'],'revenue':round(x['revenue'],2),'profit':round(x['profit'],2)} for x in group('product_name')]
+ by_department=[{'department':x['name'],'revenue':round(x['revenue'],2),'profit':round(x['profit'],2)} for x in group('department')]
+ return {'meta':{'rows':len(d),'days':len(set(r['stat_date'] for r in d)),'latest_date':max((r['stat_date'] for r in d),default='')},'summary':{'revenue':revenue,'gross_profit':round(revenue-cost,2),'operating_expense':expense,'net_profit':profit,'gross_margin':round((revenue-cost)/revenue*100,1) if revenue else 0,'net_margin':round(profit/revenue*100,1) if revenue else 0},'by_date':by_date,'by_product':by_product,'by_department':by_department,'rows':d}
+class Handler(SimpleHTTPRequestHandler):
+ def __init__(self,*a,**kw):super().__init__(*a,directory=ROOT,**kw)
+ def send_json(self,data,status=200):
+  raw=json.dumps(data,ensure_ascii=False).encode();self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Access-Control-Allow-Origin','*');self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+ def do_OPTIONS(self):self.send_response(204);self.send_header('Access-Control-Allow-Origin','*');self.send_header('Access-Control-Allow-Methods','GET,POST,OPTIONS');self.send_header('Access-Control-Allow-Headers','Content-Type');self.end_headers()
+ def do_GET(self):
+  path=urlparse(self.path).path;c=db();sample_seed(c)
+  if path=='/api/health':return self.send_json({'ok':True,'version':'1.0.0','database':'sqlite'})
+  if path=='/api/summary':
+   from urllib.parse import parse_qs
+   query=parse_qs(urlparse(self.path).query); start=query.get('start_date',[''])[0]; end=query.get('end_date',['']); end=end[0] if end else ''
+   return self.send_json(payload(c,start,end))
+  if path=='/api/profit-rows':return self.send_json({'rows':[dict(r) for r in c.execute('SELECT * FROM product_profit_daily ORDER BY stat_date DESC,id').fetchall()]})
+  return super().do_GET()
+ def do_POST(self):
+  if self.path!='/api/import':self.send_error(404);return
+  try:
+   length=int(self.headers.get('Content-Length','0')); body=self.rfile.read(length); envelope=(f"Content-Type: {self.headers.get('Content-Type','')}\r\nMIME-Version: 1.0\r\n\r\n").encode()+body; message=BytesParser(policy=policy.default).parsebytes(envelope); item=next((p for p in message.iter_parts() if p.get_param('name',header='Content-Disposition')=='file'),None)
+   if item is None: raise ValueError('未找到上传文件')
+   name=os.path.basename(item.get_filename() or 'import.xlsx');raw=item.get_payload(decode=True) or b'';h=hashlib.sha256(raw).hexdigest();values=[]
+   if name.lower().endswith('.xlsx'):
+    from openpyxl import load_workbook
+    wb=load_workbook(io.BytesIO(raw),data_only=True,read_only=False)
+    for ws in wb.worksheets:
+     rows=list(ws.values); headers=[str(x or '').strip() for x in rows[0]]
+     current_department=''
+     current_manager=''
+     current_promotion_leader=''
+     current_date=''
+     merged_rows={2:set(),3:set(),4:set()}
+     for merged in ws.merged_cells.ranges:
+      if merged.min_col==merged.max_col and merged.min_col in merged_rows:
+       merged_rows[merged.min_col].update(range(merged.min_row,merged.max_row+1))
+      for excel_row,r in enumerate(rows[1:],start=2):
+       if len(r)<20:continue
+       if r[0]: current_date=excel_date(r[0])
+       product_name=str(r[5] or '').strip()
+       if not current_date or not product_name or product_name in ('产品名称','商品名称') or any(x in product_name for x in ('合计','总计','小计')):continue
+       if r[1]: current_department=str(r[1]).strip()
+       if r[2]: current_manager=str(r[2]).strip()
+       if r[3]: current_promotion_leader=str(r[3]).strip()
+       department=current_department if (r[1] or excel_row in merged_rows[2]) else ''
+       manager=current_manager if (r[2] or excel_row in merged_rows[3]) else ''
+       promotion_leader=current_promotion_leader if (r[3] or excel_row in merged_rows[4]) else ''
+       values.append((current_date,department,manager,promotion_leader,r[4] or '',product_name,*[num(x) for x in r[6:20]],ws.title,h))
+    else:
+     data=list(csv.reader(io.StringIO(raw.decode('utf-8-sig',errors='ignore'))));
+     current_date=''
+     for r in data[1:]:
+      if len(r)<20:continue
+      if r[0]:current_date=excel_date(r[0])
+      product_name=str(r[5] or '').strip()
+      if current_date and product_name and product_name not in ('产品名称','商品名称') and not any(x in product_name for x in ('合计','总计','小计')):values.append((current_date,r[1],r[2],r[3],r[4],product_name,*[num(x) for x in r[6:20]],'',h))
+   c=db();now=datetime.now().isoformat();ins=upd=0
+   for row in values:
+    full=row+(now,now);old=c.execute('SELECT id FROM product_profit_daily WHERE stat_date=? AND department=? AND manager=? AND product_name=?',(row[0],row[1],row[2],row[5])).fetchone()
+    if old:c.execute('UPDATE product_profit_daily SET '+','.join(f'{x}=?' for x in COLS+['source_sheet','source_hash','updated_at'])+' WHERE id=?',row[:22]+(now,old['id']));upd+=1
+    else:c.execute('INSERT INTO product_profit_daily ('+','.join(COLS)+',source_sheet,source_hash,created_at,updated_at) VALUES ('+','.join('?'*24)+')',full);ins+=1
+   c.commit();return self.send_json({'inserted':ins,'updated':upd,'days':len(set(x[0] for x in values))})
+  except Exception as e:return self.send_json({'error':str(e)},400)
+if __name__=='__main__':
+ c=db();sample_seed(c);port=int(os.environ.get('PORT','18780'));print(f'Finance API: http://127.0.0.1:{port}');ThreadingHTTPServer(('127.0.0.1',port),Handler).serve_forever()
