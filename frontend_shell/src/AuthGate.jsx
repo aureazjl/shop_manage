@@ -23,5 +23,13 @@ export default function AuthGate() {
   React.useEffect(() => { refresh().catch(() => setState({ loading: false, setup: false, authenticated: false })); }, [refresh]);
   if (state.loading) return <div style={{ padding: 24 }}>正在检查登录状态…</div>;
   if (!state.authenticated) return <Login setup={state.setup} onSuccess={refresh} />;
+  if (!window.__financeFetchPatched) {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+      const url = typeof input === 'string' ? input : input.url;
+      return nativeFetch(input, { ...init, credentials: url.startsWith(API) ? 'include' : init.credentials });
+    };
+    window.__financeFetchPatched = true;
+  }
   return <AppErrorBoundary><App /></AppErrorBoundary>;
 }
