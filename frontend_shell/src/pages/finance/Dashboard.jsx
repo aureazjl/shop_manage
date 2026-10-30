@@ -8,7 +8,9 @@ const money = v => new Intl.NumberFormat('zh-CN', { style: 'currency', currency:
 const empty = { summary: { revenue: 0, net_profit: 0, operating_expense: 0, net_margin: 0 }, by_product: [], by_department: [] };
 
 export default function Dashboard() {
-  const now = new Date(), pad = n => String(n).padStart(2, '0');
+  const now = new Date();
+  now.setDate(now.getDate() - 1);
+  const pad = n => String(n).padStart(2, '0');
   const month = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, first = `${month}-01`, today = `${month}-${pad(now.getDate())}`;
   const [d, setD] = React.useState(null), [start, setStart] = React.useState(first), [end, setEnd] = React.useState(today);
   const load = React.useCallback((a, b) => fetch(`${API}/api/summary?start_date=${a}&end_date=${b}`).then(r => r.json()).then(data => setD({ ...empty, ...data, summary: { ...empty.summary, ...(data.summary || {}) }, by_product: Array.isArray(data.by_product) ? data.by_product : [], by_department: Array.isArray(data.by_department) ? data.by_department : [] })).catch(() => setD(empty)), []);
