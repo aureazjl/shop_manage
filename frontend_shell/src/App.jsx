@@ -9,6 +9,7 @@ import { Outlet } from "react-router";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import Fab from "@mui/material/Fab";
 
 export const API = import.meta.env.VITE_API_BASE ?? (import.meta.env.DEV ? "http://127.0.0.1:18780" : "");
 
@@ -50,6 +51,18 @@ export default function MiniDrawer() {
         />}
         <SideBar open={open} handleDrawerClose={handleDrawerClose} />
 
+        {isMobile && (
+          <Fab
+            size="small"
+            color="primary"
+            aria-label="打开导航"
+            onClick={handleDrawerOpen}
+            sx={{ position: "fixed", left: 8, top: "50%", transform: "translateY(-50%)", zIndex: (theme) => theme.zIndex.drawer + 1, boxShadow: 3 }}
+          >
+            <MenuIcon fontSize="small" />
+          </Fab>
+        )}
+
         {isMobile && !mobileTopBarVisible && (
           <IconButton
             color="inherit"
@@ -61,7 +74,7 @@ export default function MiniDrawer() {
           </IconButton>
         )}
 
-        <Box component="main" sx={{ flexGrow: 1, p: { xs: 1, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh" }}>
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 0.75, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh" }}>
           <DrawerHeader sx={{ display: { xs: mobileTopBarVisible ? "flex" : "none", sm: "flex" } }} />
           <Outlet />
         </Box>

@@ -49,6 +49,7 @@ export default function CustomAppBar({ open, handleDrawerOpen, setMode, onHideMo
           sx={[
             {
               marginRight: { xs: 1, sm: 5 },
+              display: { xs: "none", sm: "inline-flex" },
             },
             open && { display: "none" },
           ]}

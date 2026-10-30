@@ -85,11 +85,6 @@ const Array1 = [
     icon: <TimelineOutlinedIcon />,
     path: "/analysis",
   },
-  {
-    text: "导入数据",
-    icon: <BarChartOutlinedIcon />,
-    path: "/import",
-  },
 ];
 
 const Array2 = [
