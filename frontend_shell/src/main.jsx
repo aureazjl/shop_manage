@@ -26,7 +26,8 @@ const router = createBrowserRouter(
       <Route path="import" element={<ImportData />} />
       <Route path="analysis" element={<AnalysisEmptyGuard />} />
     </Route>
-  )
+  ),
+  { basename: import.meta.env.BASE_URL }
 );
 
 createRoot(document.getElementById("root")).render(
