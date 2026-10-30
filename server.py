@@ -130,7 +130,7 @@ class Handler(SimpleHTTPRequestHandler):
        values.append((current_date,department,manager,promotion_leader,r[4] or '',product_name,*[num(x) for x in r[6:20]],ws.title,h))
     else:
      csv_text=raw.decode('utf-8-sig',errors='ignore').replace('\x00','')
-     data=list(csv.reader(io.StringIO(csv_text)));
+     data=list(csv.reader(io.StringIO(csv_text, newline='')));
      current_date=''
      for r in data[1:]:
       if len(r)<20:continue
