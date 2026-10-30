@@ -12,6 +12,9 @@ import {
   TableCell,
   TableBody,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import { API } from "../../App";
 import FinanceDateRange from "../../components/FinanceDateRange";
@@ -68,6 +71,16 @@ const trendRange = (asOf, days) => {
     previousEnd = shiftDate(asOf, -days),
     previousStart = shiftDate(previousEnd, -days + 1);
   return `本期：${currentStart} 至 ${asOf}；对比期：${previousStart} 至 ${previousEnd}`;
+};
+const MobileTrend = ({ rows }) => {
+  const map = {};
+  rows.forEach((r) => { map[r.stat_date] = (map[r.stat_date] || 0) + (r.actual_sales || 0); });
+  const points = Object.keys(map).sort().map((date) => ({ date, value: map[date] }));
+  if (!points.length) return <Typography color="text.secondary">暂无趋势数据</Typography>;
+  const w = Math.max(320, points.length * 58), h = 210, max = Math.max(...points.map((p) => p.value), 1);
+  const x = (i) => 40 + (w - 56) * i / Math.max(points.length - 1, 1), y = (v) => 176 - 145 * v / max;
+  const path = points.map((p, i) => `${i ? "L" : "M"} ${x(i)} ${y(p.value)}`).join(" ");
+  return <Box sx={{ overflowX: "auto" }}><svg width={w} height={h}><text x="8" y="15" fontSize="10" fill="#6d8279">销售额</text><path d={`M40 176H${w - 16}`} stroke="#dce9e3" /><path d={path} fill="none" stroke="#157a62" strokeWidth="3" />{points.map((p, i) => <g key={p.date}><circle cx={x(i)} cy={y(p.value)} r="4" fill="#157a62"><title>{p.date}：{money(p.value)}</title></circle><text x={x(i)} y="200" textAnchor="middle" fontSize="10" fill="#6d8279">{p.date.slice(5)}</text></g>)}</svg></Box>;
 };
 if (typeof document !== "undefined") {
   const applyTrendTitles = () => {
@@ -289,7 +302,8 @@ export default function AnalysisV2() {
     [sort, setSort] = React.useState("sales"),
     [direction, setDirection] = React.useState("desc"),
     [page, setPage] = React.useState(1),
-    [chartRows, setChartRows] = React.useState([]);
+    [chartRows, setChartRows] = React.useState([]),
+    [trendProduct, setTrendProduct] = React.useState("");
   const load = React.useCallback((a, b, trendStart = a, trendEnd = b) => {
     setD(null);
     const request = (x, y) =>
@@ -456,9 +470,9 @@ export default function AnalysisV2() {
                 <Typography fontWeight={700} noWrap>
                   {i + 1}. {x.name}
                 </Typography>
-                <Typography color="text.secondary" variant="caption">
+                <Button type="button" size="small" onClick={() => setTrendProduct(x.name)} sx={{ minWidth: 0, p: 0, fontSize: "0.68rem", whiteSpace: "nowrap" }}>
                   点击查看趋势
-                </Typography>
+                </Button>
               </Stack>
               <Stack direction="row" spacing={2} sx={{ mt: 1.25 }}>
                 <Box sx={{ flex: 1 }}>
@@ -655,6 +669,10 @@ export default function AnalysisV2() {
           </Button>
         </Stack>
       </Paper>
+      <Dialog open={Boolean(trendProduct)} onClose={() => setTrendProduct("")} fullWidth maxWidth="sm">
+        <DialogTitle>{trendProduct} · 销售额趋势</DialogTitle>
+        <DialogContent><Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{start} 至 {end}</Typography><MobileTrend rows={trendData.filter((r) => r.product_name === trendProduct)} /></DialogContent>
+      </Dialog>
     </>
   );
 }
