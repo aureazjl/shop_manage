@@ -12,7 +12,7 @@ export const getDesignTokens = (mode = "light") => ({
       styleOverrides: {
         root: {
           textTransform: "none",
-          borderRadius: 6,
+          borderRadius: 10,
           transition: "background-color 0.15s ease, border-color 0.15s ease",
           boxShadow: "none",
           fontWeight: 700,
@@ -26,8 +26,8 @@ export const getDesignTokens = (mode = "light") => ({
       styleOverrides: {
         root: {
           border: "1px solid #dfe8e3",
-          borderRadius: 8,
-          boxShadow: "none",
+          borderRadius: 12,
+          boxShadow: "0 2px 8px rgba(23,54,44,.025)",
           transition: "box-shadow 0.2s ease, background-color 0.2s ease",
         },
       },
@@ -40,9 +40,9 @@ export const getDesignTokens = (mode = "light") => ({
       },
     },
     MuiTextField: { defaultProps: { variant: "outlined" } },
-    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 6, backgroundColor: "#fff" } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10, backgroundColor: "#fff" } } },
     MuiTableCell: { styleOverrides: { head: { backgroundColor: "#eef7f2", color: "#157a62", fontWeight: 700 } } },
   },
-  shape: { borderRadius: 8 },
+  shape: { borderRadius: 12 },
   typography: { fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif', h4: { letterSpacing: "-0.01em", fontWeight: 700 }, h6: { letterSpacing: 0, fontWeight: 700 } },
 });
