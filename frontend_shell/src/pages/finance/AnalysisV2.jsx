@@ -78,10 +78,10 @@ const MobileTrend = ({ rows, start, end }) => {
   const dates = start && end ? daysBetween(start, end) : Object.keys(map).sort();
   const points = dates.map((date) => ({ date, value: map[date] || 0 }));
   if (!points.length) return <Typography color="text.secondary">暂无趋势数据</Typography>;
-  const w = Math.max(320, points.length * 58), h = 210, max = Math.max(...points.map((p) => p.value), 1);
-  const x = (i) => 40 + (w - 56) * i / Math.max(points.length - 1, 1), y = (v) => 176 - 145 * v / max;
+  const w = 360, h = 190, max = Math.max(...points.map((p) => p.value), 1);
+  const x = (i) => 40 + (w - 56) * i / Math.max(points.length - 1, 1), y = (v) => 156 - 130 * v / max;
   const path = points.map((p, i) => `${i ? "L" : "M"} ${x(i)} ${y(p.value)}`).join(" ");
-  return <Box sx={{ overflowX: "auto" }}><svg width={w} height={h}><text x="8" y="15" fontSize="10" fill="#6d8279">销售额</text><path d={`M40 176H${w - 16}`} stroke="#dce9e3" /><path d={path} fill="none" stroke="#157a62" strokeWidth="3" />{points.map((p, i) => <g key={p.date}><circle cx={x(i)} cy={y(p.value)} r="4" fill="#157a62"><title>{p.date}：{money(p.value)}</title></circle><text x={x(i)} y="200" textAnchor="middle" fontSize="10" fill="#6d8279">{p.date.slice(5)}</text></g>)}</svg></Box>;
+  return <Box sx={{ width: "100%", overflow: "hidden" }}><svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"><text x="8" y="15" fontSize="10" fill="#6d8279">销售额</text><path d={`M40 156H${w - 16}`} stroke="#dce9e3" /><path d={path} fill="none" stroke="#157a62" strokeWidth="3" />{points.map((p, i) => <g key={p.date}><circle cx={x(i)} cy={y(p.value)} r="4" fill="#157a62"><title>{p.date}：{money(p.value)}</title></circle><text x={x(i)} y="180" textAnchor="middle" fontSize="10" fill="#6d8279">{p.date.slice(5)}</text></g>)}</svg></Box>;
 };
 if (typeof document !== "undefined") {
   const applyTrendTitles = () => {
