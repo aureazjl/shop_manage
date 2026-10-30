@@ -8,7 +8,7 @@ import { getDesignTokens } from "./theme";
 import { Outlet } from "react-router";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
+import Typography from "@mui/material/Typography";
 
 export const API = import.meta.env.VITE_API_BASE ?? (import.meta.env.DEV ? "http://127.0.0.1:18780" : "");
 
@@ -26,7 +26,6 @@ export default function MiniDrawer() {
     localStorage.getItem("currentMode") ?? "light"
   );
   const [open, setOpen] = React.useState(false);
-  const [mobileTopBarVisible, setMobileTopBarVisible] = React.useState(true);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -42,27 +41,20 @@ export default function MiniDrawer() {
     <ThemeProvider theme={theme}>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
-        {(!isMobile || mobileTopBarVisible) && <CustomAppBar
+        {!isMobile && <CustomAppBar
           open={open}
           handleDrawerOpen={handleDrawerOpen}
           setMode={setMode}
-          onHideMobile={() => setMobileTopBarVisible(false)}
         />}
         <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} />
 
-        {isMobile && !mobileTopBarVisible && (
-          <IconButton
-            color="inherit"
-            aria-label="显示顶部导航"
-            onClick={() => setMobileTopBarVisible(true)}
-            sx={{ position: "fixed", top: 8, left: 8, zIndex: (theme) => theme.zIndex.drawer + 2, bgcolor: "primary.main", color: "primary.contrastText", "&:hover": { bgcolor: "primary.dark" } }}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
 
-        <Box component="main" sx={{ flexGrow: 1, p: { xs: 0.75, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh" }}>
-          <DrawerHeader sx={{ display: { xs: mobileTopBarVisible ? "flex" : "none", sm: "flex" } }} />
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 1.5, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh" }}>
+          {isMobile && <Box sx={{ mb: 2, px: 0.5, pt: 0.5 }}>
+            <Typography variant="h6" fontWeight={800} color="primary.main" sx={{ letterSpacing: 0.5 }}>电商财务分析平台</Typography>
+            <Typography variant="caption" color="text.secondary">经营数据一站式分析</Typography>
+          </Box>}
+          <DrawerHeader sx={{ display: { xs: "none", sm: "flex" } }} />
           <Outlet />
         </Box>
       </Box>
