@@ -138,11 +138,10 @@ class Handler(SimpleHTTPRequestHandler):
       product_name=str(r[5] or '').strip()
       if current_date and product_name and product_name not in ('产品名称','商品名称') and not any(x in product_name for x in ('合计','总计','小计')):values.append((current_date,r[1],r[2],r[3],r[4],product_name,*[num(x) for x in r[6:20]],'',h))
    c=db();now=datetime.now().isoformat();ins=upd=0
+   c.execute('DELETE FROM product_profit_daily WHERE source_hash=?',(h,))
    for row in values:
-    full=row+(now,now);old=c.execute('SELECT id FROM product_profit_daily WHERE stat_date=? AND department=? AND manager=? AND product_name=?',(row[0],row[1],row[2],row[5])).fetchone()
-    if old:c.execute('UPDATE product_profit_daily SET '+','.join(f'{x}=?' for x in COLS+['source_sheet','source_hash','updated_at'])+' WHERE id=?',row[:22]+(now,old['id']));upd+=1
-    else:c.execute('INSERT INTO product_profit_daily ('+','.join(COLS)+',source_sheet,source_hash,created_at,updated_at) VALUES ('+','.join('?'*24)+')',full);ins+=1
-   c.commit();return self.send_json({'inserted':ins,'updated':upd,'days':len(set(x[0] for x in values))})
+    full=row+(now,now);c.execute('INSERT INTO product_profit_daily ('+','.join(COLS)+',source_sheet,source_hash,created_at,updated_at) VALUES ('+','.join('?'*24)+')',full);ins+=1
+   c.commit();return self.send_json({'inserted':ins,'updated':upd,'source_rows':len(values),'days':len(set(x[0] for x in values))})
   except Exception as e:return self.send_json({'error':str(e)},400)
 if __name__=='__main__':
  c=db();sample_seed(c);port=int(os.environ.get('PORT','18780'));print(f'Finance API: http://127.0.0.1:{port}');ThreadingHTTPServer(('127.0.0.1',port),Handler).serve_forever()
