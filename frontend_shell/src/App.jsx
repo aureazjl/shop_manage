@@ -49,10 +49,9 @@ export default function MiniDrawer() {
         <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} />
 
 
-        <Box component="main" sx={{ flexGrow: 1, p: { xs: 1.25, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh" }}>
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 2.25, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh" }}>
           {isMobile && <Box sx={{ mb: 2.5, px: 2, py: 1.75, borderRadius: 3, background: "linear-gradient(135deg, #eaf6f0 0%, #f8fbf9 100%)", border: "1px solid #d9ebe2", boxShadow: "0 4px 14px rgba(21,122,98,.06)" }}>
             <Typography variant="h6" fontWeight={800} color="primary.dark" sx={{ letterSpacing: 0.4 }}>电商财务分析平台</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4 }}>经营数据一站式分析</Typography>
           </Box>}
           <DrawerHeader sx={{ display: { xs: "none", sm: "flex" } }} />
           <Outlet />
