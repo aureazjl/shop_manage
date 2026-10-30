@@ -129,7 +129,8 @@ class Handler(SimpleHTTPRequestHandler):
        promotion_leader=current_promotion_leader if (r[3] or excel_row in merged_rows[4]) else ''
        values.append((current_date,department,manager,promotion_leader,r[4] or '',product_name,*[num(x) for x in r[6:20]],ws.title,h))
     else:
-     data=list(csv.reader(io.StringIO(raw.decode('utf-8-sig',errors='ignore'))));
+     csv_text=raw.decode('utf-8-sig',errors='ignore').replace('\x00','')
+     data=list(csv.reader(io.StringIO(csv_text)));
      current_date=''
      for r in data[1:]:
       if len(r)<20:continue
