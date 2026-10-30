@@ -471,7 +471,7 @@ export default function AnalysisV2() {
                   {i + 1}. {x.name}
                 </Typography>
                 <Button type="button" size="small" onClick={() => setTrendProduct(x.name)} sx={{ minWidth: 0, p: 0, fontSize: "0.68rem", whiteSpace: "nowrap" }}>
-                  点击查看趋势
+                  查看趋势
                 </Button>
               </Stack>
               <Stack direction="row" spacing={2} sx={{ mt: 1.25 }}>
