@@ -26,16 +26,16 @@ export default function FinanceDateRange({ start, end, onChange, label = '日期
   };
   return <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="zh-cn">
     <Box sx={{ width: { xs: '100%', sm: 420 } }}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
+      <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
         <DatePicker
           label={label}
           value={startValue}
           maxDate={today}
           onChange={value => notify(value, endValue)}
           format="YYYY-MM-DD"
-          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error) } }}
+          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error), sx: { flex: 1, minWidth: 0 } } }}
         />
-        <Typography color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>至</Typography>
+        <Typography color="text.secondary" sx={{ flexShrink: 0, fontSize: { xs: 12, sm: 14 } }}>至</Typography>
         <DatePicker
           label="结束日期"
           value={endValue}
@@ -43,7 +43,7 @@ export default function FinanceDateRange({ start, end, onChange, label = '日期
           maxDate={today}
           onChange={value => notify(startValue, value)}
           format="YYYY-MM-DD"
-          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error) } }}
+          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error), sx: { flex: 1, minWidth: 0 } } }}
         />
       </Stack>
       {error && <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>{error}</Typography>}
