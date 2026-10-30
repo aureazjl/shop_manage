@@ -135,7 +135,10 @@ class Handler(SimpleHTTPRequestHandler):
       values.append((current_date,department,manager,promotion_leader,r[4] or '',product_name,*[num(x) for x in r[6:20]],ws.title,h))
     else:
      csv_text=raw.decode('utf-8-sig',errors='ignore').replace('\x00','')
-     data=list(csv.reader(io.StringIO(csv_text, newline='')));
+     try:
+      data=list(csv.reader(io.StringIO(csv_text, newline='')))
+     except csv.Error as exc:
+      raise ValueError('CSV 格式不规范：存在未加引号的换行或引号，请先用 Excel 另存为 XLSX 后再上传') from exc
      current_date=''
      for r in data[1:]:
       if len(r)<20:continue
