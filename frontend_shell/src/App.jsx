@@ -7,7 +7,7 @@ import SideBar from "./components/SideBar";
 import { getDesignTokens } from "./theme";
 import { Outlet } from "react-router";
 
-export const API = import.meta.env.VITE_API_BASE ?? "";
+export const API = import.meta.env.VITE_API_BASE ?? (import.meta.env.DEV ? "http://127.0.0.1:18780" : "");
 
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
