@@ -50,8 +50,8 @@ export default function MiniDrawer() {
 
 
         <Box component="main" sx={{ flexGrow: 1, p: { xs: 2.25, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh", "@media (min-width:601px)": { "& .MuiTextField-root": { minWidth: 150 } }, "@media (max-width:600px)": { "& .MuiPaper-root": { p: "18px !important" }, "& .MuiTypography-h4": { fontSize: "1.8rem", lineHeight: 1.2, letterSpacing: "-0.02em" }, "& .MuiTypography-h6": { fontSize: "1rem", lineHeight: 1.35 }, "& .MuiTypography-body1": { fontSize: "0.9rem" }, "& .MuiTypography-body2": { fontSize: "0.78rem" }, "& .MuiTypography-caption": { fontSize: "0.7rem" }, "& .MuiTableCell-root": { fontSize: "0.75rem" }, "& .MuiLinearProgress-root": { marginTop: "6px" } } }}>
-          {isMobile && <Box sx={{ mb: 2.5, px: 2, py: 1.75, borderRadius: 3, background: "linear-gradient(135deg, #eaf6f0 0%, #f8fbf9 100%)", border: "1px solid #d9ebe2", boxShadow: "0 4px 14px rgba(21,122,98,.06)" }}>
-            <Typography variant="h6" fontWeight={800} color="primary.dark" sx={{ letterSpacing: 0.4 }}>电商财务分析平台</Typography>
+          {isMobile && <Box sx={{ mb: 2, px: 0.5, pt: 0.25 }}>
+            <Typography variant="body1" fontWeight={800} color="primary.dark" sx={{ letterSpacing: 0.3 }}>电商财务分析平台</Typography>
           </Box>}
           <DrawerHeader sx={{ display: { xs: "none", sm: "flex" } }} />
           <Outlet />
