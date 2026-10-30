@@ -15,6 +15,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  useMediaQuery,
 } from "@mui/material";
 import { API } from "../../App";
 import FinanceDateRange from "../../components/FinanceDateRange";
@@ -108,6 +109,7 @@ if (typeof document !== "undefined") {
   setTimeout(applyTrendTitles, 0);
 }
 function AxisChart({ points }) {
+  const mobile = useMediaQuery("(max-width:899px)");
   const scrollRef = React.useRef(null),
     dragRef = React.useRef(null),
     [hovered, setHovered] = React.useState(null);
@@ -117,8 +119,8 @@ function AxisChart({ points }) {
         当前日期范围暂无趋势数据
       </Typography>
     );
-  const w = Math.max(760, points.length * 28),
-    h = 310,
+  const w = mobile ? 330 : Math.max(760, points.length * 28),
+    h = mobile ? 230 : 310,
     p = { l: 76, r: 24, t: 28, b: 54 },
     max = Math.max(...points.map((x) => x.sales), 1),
     step = max / 4,
@@ -186,15 +188,15 @@ function AxisChart({ points }) {
           e.currentTarget.style.cursor = "grab";
         }}
         sx={{
-          overflowX: "auto",
-          cursor: "grab",
+          overflowX: mobile ? "hidden" : "auto",
+          cursor: mobile ? "default" : "grab",
           userSelect: "none",
-          touchAction: "pan-y",
+          touchAction: mobile ? "auto" : "pan-y",
         }}
       >
         <svg
           viewBox={`0 0 ${w} ${h}`}
-          width={w}
+          width={mobile ? "100%" : w}
           height={h}
           aria-label="销售额趋势"
         >
