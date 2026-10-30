@@ -121,8 +121,8 @@ function AxisChart({ points }) {
           sx={{
             position: "absolute",
             zIndex: 2,
-            top: 10,
-            left: 16,
+            top: Math.max(8, cy(hovered.sales) - 76),
+            left: Math.min(Math.max(8, cx(hovered.index) - 70), w - 178),
             px: 1.5,
             py: 1,
             pointerEvents: "none",
@@ -219,9 +219,9 @@ function AxisChart({ points }) {
                 strokeWidth="2"
                 tabIndex="0"
                 aria-label={`${x.date} 销售额 ${money(x.sales)}`}
-                onMouseEnter={() => setHovered(x)}
+                onMouseEnter={() => setHovered({ ...x, index: i })}
                 onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered(x)}
+                onFocus={() => setHovered({ ...x, index: i })}
                 onBlur={() => setHovered(null)}
               >
                 <title>{`${x.date}：${money(x.sales)}`}</title>
