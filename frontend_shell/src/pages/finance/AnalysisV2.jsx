@@ -442,7 +442,83 @@ export default function AnalysisV2() {
           </Typography>
         </Stack>
         <Divider />
-        <Box sx={{ overflowX: "auto" }}>
+        <Stack
+          spacing={1.25}
+          sx={{ display: { xs: "flex", sm: "none" }, mt: 1.5 }}
+        >
+          {visible.map((x, i) => (
+            <Paper
+              key={x.name}
+              variant="outlined"
+              sx={{ p: 1.5, borderRadius: 2 }}
+            >
+              <Stack direction="row" justifyContent="space-between" gap={1}>
+                <Typography fontWeight={700} noWrap>
+                  {i + 1}. {x.name}
+                </Typography>
+                <Typography color="text.secondary" variant="caption">
+                  点击查看趋势
+                </Typography>
+              </Stack>
+              <Stack direction="row" spacing={2} sx={{ mt: 1.25 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    累计销售额
+                  </Typography>
+                  <Typography fontWeight={700}>{money(x.sales)}</Typography>
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    累计利润
+                  </Typography>
+                  <Typography
+                    fontWeight={700}
+                    color={x.profit < 0 ? "error.main" : "success.main"}
+                  >
+                    {money(x.profit)}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ mt: 1.25 }}>
+                {[
+                  ["近1天", x.t1],
+                  ["近7天", x.t7],
+                  ["近30天", x.t30],
+                ].map(([label, t]) => (
+                  <Box
+                    key={label}
+                    sx={{
+                      flex: 1,
+                      p: 0.75,
+                      bgcolor: "action.hover",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      {label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight={700}
+                      color={
+                        t.value === null
+                          ? "text.secondary"
+                          : t.up
+                            ? "success.main"
+                            : "error.main"
+                      }
+                    >
+                      {t.value === null
+                        ? "—"
+                        : `${t.up ? "↑" : "↓"}${Math.abs(t.value).toFixed(1)}%`}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+          ))}
+        </Stack>
+        <Box sx={{ overflowX: "auto", display: { xs: "none", sm: "block" } }}>
           <Table
             size="small"
             sx={{
