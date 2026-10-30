@@ -9,7 +9,6 @@ import { Outlet } from "react-router";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import Fab from "@mui/material/Fab";
 
 export const API = import.meta.env.VITE_API_BASE ?? (import.meta.env.DEV ? "http://127.0.0.1:18780" : "");
 
@@ -49,19 +48,7 @@ export default function MiniDrawer() {
           setMode={setMode}
           onHideMobile={() => setMobileTopBarVisible(false)}
         />}
-        <SideBar open={open} handleDrawerClose={handleDrawerClose} />
-
-        {isMobile && (
-          <Fab
-            size="small"
-            color="primary"
-            aria-label="打开导航"
-            onClick={handleDrawerOpen}
-            sx={{ position: "fixed", left: 8, top: "50%", transform: "translateY(-50%)", zIndex: (theme) => theme.zIndex.drawer + 1, boxShadow: 3 }}
-          >
-            <MenuIcon fontSize="small" />
-          </Fab>
-        )}
+        <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} />
 
         {isMobile && !mobileTopBarVisible && (
           <IconButton

@@ -11,7 +11,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import MailIcon from "@mui/icons-material/Mail";
-import { styled, useTheme, Tooltip, useMediaQuery } from "@mui/material";
+import { styled, useTheme, Tooltip, useMediaQuery, Box } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import { HomeOutlined } from "@mui/icons-material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -92,7 +92,7 @@ const Array2 = [
 ];
 
 
-const SideBar = ({ open, handleDrawerClose }) => {
+const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
   let location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -143,15 +143,28 @@ const SideBar = ({ open, handleDrawerClose }) => {
 
   if (isMobile) {
     return (
-      <MuiDrawer
-        variant="temporary"
-        open={open}
-        onClose={handleDrawerClose}
-        ModalProps={{ keepMounted: true }}
-        sx={{ "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" } }}
-      >
-        {drawerContent}
-      </MuiDrawer>
+      <Box sx={{ position: "fixed", right: 16, bottom: 28, zIndex: (theme) => theme.zIndex.drawer + 2, display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 1 }}>
+        <IconButton
+          onClick={open ? handleDrawerClose : handleDrawerOpen}
+          aria-label={open ? "收起导航" : "展开导航"}
+          sx={{ width: 42, height: 42, bgcolor: "primary.main", color: "primary.contrastText", boxShadow: 3, "&:hover": { bgcolor: "primary.dark" } }}
+        >
+          <MenuOutlinedIcon />
+        </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: open ? 0.75 : 0, width: open ? "auto" : 0, maxWidth: open ? 310 : 0, overflow: "hidden", opacity: open ? 1 : 0, transform: open ? "translateX(0)" : "translateX(16px)", transition: "all 180ms ease", bgcolor: "background.paper", borderRadius: 3, boxShadow: 3 }}>
+          {[...Array1, ...Array2].map((item) => (
+            <Tooltip key={item.path} title={item.text} placement="top">
+              <IconButton
+                size="small"
+                onClick={() => { navigate(item.path); handleDrawerClose(); }}
+                sx={{ color: location.pathname === item.path ? "primary.main" : "text.secondary" }}
+              >
+                {item.icon}
+              </IconButton>
+            </Tooltip>
+          ))}
+        </Box>
+      </Box>
     );
   }
 
