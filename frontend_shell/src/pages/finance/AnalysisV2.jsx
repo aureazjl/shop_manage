@@ -671,7 +671,7 @@ export default function AnalysisV2() {
       </Paper>
       <Dialog open={Boolean(trendProduct)} onClose={() => setTrendProduct("")} fullWidth maxWidth="sm">
         <DialogTitle>{trendProduct} · 销售额趋势</DialogTitle>
-        <DialogContent><Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{start} 至 {end}</Typography><MobileTrend rows={trendData.filter((r) => r.product_name === trendProduct)} /></DialogContent>
+        <DialogContent><Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{start === end ? shiftDate(end, -6) : start} 至 {end}</Typography><MobileTrend rows={trendData.filter((r) => r.product_name === trendProduct)} /></DialogContent>
       </Dialog>
     </>
   );
