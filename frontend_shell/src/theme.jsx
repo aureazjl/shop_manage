@@ -51,5 +51,5 @@ export const getDesignTokens = (mode = "light") => ({
     MuiTableCell: { styleOverrides: { head: { backgroundColor: "#eef7f2", color: "#157a62", fontWeight: 700 } } },
   },
   shape: { borderRadius: 12 },
-  typography: { fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif', h4: { letterSpacing: "-0.01em", fontWeight: 700, '@media (max-width:600px)': { fontSize: '1.2rem', lineHeight: 1.25, letterSpacing: '-0.01em', color: '#0d5947' } }, h6: { letterSpacing: 0, fontWeight: 700 } },
+  typography: { fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif', h4: { letterSpacing: "-0.01em", fontWeight: 700, '@media (max-width:600px)': { fontSize: '1.2rem !important', lineHeight: 1.25, letterSpacing: '-0.01em', color: '#0d5947' } }, h6: { letterSpacing: 0, fontWeight: 700 } },
 });
