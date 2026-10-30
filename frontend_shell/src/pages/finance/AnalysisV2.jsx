@@ -72,10 +72,11 @@ const trendRange = (asOf, days) => {
     previousStart = shiftDate(previousEnd, -days + 1);
   return `本期：${currentStart} 至 ${asOf}；对比期：${previousStart} 至 ${previousEnd}`;
 };
-const MobileTrend = ({ rows }) => {
+const MobileTrend = ({ rows, start, end }) => {
   const map = {};
   rows.forEach((r) => { map[r.stat_date] = (map[r.stat_date] || 0) + (r.actual_sales || 0); });
-  const points = Object.keys(map).sort().map((date) => ({ date, value: map[date] }));
+  const dates = start && end ? daysBetween(start, end) : Object.keys(map).sort();
+  const points = dates.map((date) => ({ date, value: map[date] || 0 }));
   if (!points.length) return <Typography color="text.secondary">暂无趋势数据</Typography>;
   const w = Math.max(320, points.length * 58), h = 210, max = Math.max(...points.map((p) => p.value), 1);
   const x = (i) => 40 + (w - 56) * i / Math.max(points.length - 1, 1), y = (v) => 176 - 145 * v / max;
@@ -671,7 +672,7 @@ export default function AnalysisV2() {
       </Paper>
       <Dialog open={Boolean(trendProduct)} onClose={() => setTrendProduct("")} fullWidth maxWidth="sm">
         <DialogTitle>{trendProduct} · 销售额趋势</DialogTitle>
-        <DialogContent><Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{start === end ? shiftDate(end, -6) : start} 至 {end}</Typography><MobileTrend rows={trendData.filter((r) => r.product_name === trendProduct)} /></DialogContent>
+        <DialogContent><Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{start === end ? shiftDate(end, -6) : start} 至 {end}</Typography><MobileTrend start={start === end ? shiftDate(end, -6) : start} end={end} rows={trendData.filter((r) => r.product_name === trendProduct)} /></DialogContent>
       </Dialog>
     </>
   );
