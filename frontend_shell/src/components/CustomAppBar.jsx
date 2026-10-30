@@ -12,6 +12,7 @@ import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;
@@ -24,20 +25,22 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    [theme.breakpoints.up("sm")]: {
+      marginLeft: drawerWidth,
+      width: `calc(100% - ${drawerWidth}px)`,
+      transition: theme.transitions.create(["width", "margin"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+    },
   }),
 }));
-export default function CustomAppBar({ open, handleDrawerOpen, setMode }) {
+export default function CustomAppBar({ open, handleDrawerOpen, setMode, onHideMobile }) {
   const theme = useTheme();
   const navigate = useNavigate();
   return (
     <AppBar position="fixed" open={open}>
-      <Toolbar>
+      <Toolbar sx={{ minHeight: { xs: 48, sm: 64 } }}>
         <IconButton
           color="inherit"
           aria-label="open drawer"
@@ -45,7 +48,7 @@ export default function CustomAppBar({ open, handleDrawerOpen, setMode }) {
           edge="start"
           sx={[
             {
-              marginRight: 5,
+              marginRight: { xs: 1, sm: 5 },
             },
             open && { display: "none" },
           ]}
@@ -89,6 +92,9 @@ export default function CustomAppBar({ open, handleDrawerOpen, setMode }) {
           )}
           <IconButton color="inherit">
             <SettingsOutlinedIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={onHideMobile} sx={{ display: { xs: "inline-flex", sm: "none" } }} aria-label="隐藏顶部导航">
+            <VisibilityOffOutlinedIcon />
           </IconButton>
           <IconButton color="inherit" onClick={() => navigate("/profile")}>
             <Person2OutlinedIcon />

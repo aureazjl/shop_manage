@@ -11,7 +11,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import MailIcon from "@mui/icons-material/Mail";
-import { styled, useTheme, Tooltip } from "@mui/material";
+import { styled, useTheme, Tooltip, useMediaQuery } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import { HomeOutlined } from "@mui/icons-material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -101,15 +101,12 @@ const SideBar = ({ open, handleDrawerClose }) => {
   let location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  return (
-    <Drawer variant="permanent" open={open}>
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const drawerContent = (
+    <>
       <DrawerHeader>
         <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "rtl" ? (
-            <ChevronRightIcon />
-          ) : (
-            <ChevronLeftIcon />
-          )}
+          {theme.direction === "rtl" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </IconButton>
       </DrawerHeader>
       <Divider />
@@ -118,81 +115,54 @@ const SideBar = ({ open, handleDrawerClose }) => {
           <ListItem key={item.path} disablePadding sx={{ display: "block" }}>
             <Tooltip title={open ? null : item.text} placement="left">
               <ListItemButton
-                onClick={() => {
-                  navigate(item.path);
-                }}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                  bgcolor:
-                    location.pathname === item.path
-                      ? theme.palette.mode === "dark"
-                        ? grey[800]
-                        : grey[300]
-                      : null,
-                }}
+                onClick={() => { navigate(item.path); if (isMobile) handleDrawerClose(); }}
+                sx={{ minHeight: 48, justifyContent: open ? "initial" : "center", px: 2.5,
+                  bgcolor: location.pathname === item.path ? (theme.palette.mode === "dark" ? grey[800] : grey[300]) : null }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
+                <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : "auto", justifyContent: "center" }}>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>
             </Tooltip>
           </ListItem>
         ))}
       </List>
-
       <Divider />
-
       <List>
         {Array2.map((item) => (
           <ListItem key={item.path} disablePadding sx={{ display: "block" }}>
             <Tooltip title={open ? null : item.text} placement="left">
               <ListItemButton
-                onClick={() => {
-                  navigate(item.path);
-                }}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                  bgcolor:
-                    location.pathname === item.path
-                      ? theme.palette.mode === "dark"
-                        ? grey[800]
-                        : grey[300]
-                      : null,
-                }}
+                onClick={() => { navigate(item.path); if (isMobile) handleDrawerClose(); }}
+                sx={{ minHeight: 48, justifyContent: open ? "initial" : "center", px: 2.5,
+                  bgcolor: location.pathname === item.path ? (theme.palette.mode === "dark" ? grey[800] : grey[300]) : null }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
+                <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : "auto", justifyContent: "center" }}>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>
             </Tooltip>
           </ListItem>
         ))}
       </List>
+    </>
+  );
 
+  if (isMobile) {
+    return (
+      <MuiDrawer
+        variant="temporary"
+        open={open}
+        onClose={handleDrawerClose}
+        ModalProps={{ keepMounted: true }}
+        sx={{ "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" } }}
+      >
+        {drawerContent}
+      </MuiDrawer>
+    );
+  }
+
+  return (
+    <Drawer variant="permanent" open={open}>
+      {drawerContent}
     </Drawer>
   );
 };
