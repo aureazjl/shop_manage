@@ -11,11 +11,17 @@ export default function Login({ setup, onSuccess }) {
     event.preventDefault(); setBusy(true); setError('');
     try {
       const response = await fetch(`${API}/api/auth/${setup ? 'setup' : 'login'}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-      const data = await response.json();
+      const raw = await response.text();
+      let data = {};
+      try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: `服务器返回异常（HTTP ${response.status}）` }; }
       if (!response.ok) throw new Error(data.error || '操作失败');
       if (setup) {
         const login = await fetch(`${API}/api/auth/login`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-        if (!login.ok) throw new Error('管理员已创建，请重新登录');
+        if (!login.ok) {
+          const loginRaw = await login.text();
+          let loginData = {}; try { loginData = loginRaw ? JSON.parse(loginRaw) : {}; } catch { /* keep fallback */ }
+          throw new Error(loginData.error || '管理员已创建，请重新登录');
+        }
       }
       onSuccess();
     } catch (e) { setError(e.message); } finally { setBusy(false); }
