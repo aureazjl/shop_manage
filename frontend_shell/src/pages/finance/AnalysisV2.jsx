@@ -95,7 +95,8 @@ if (typeof document !== "undefined") {
 }
 function AxisChart({ points }) {
   const scrollRef = React.useRef(null),
-    dragRef = React.useRef(null);
+    dragRef = React.useRef(null),
+    [hovered, setHovered] = React.useState(null);
   if (!points.length)
     return (
       <Typography sx={{ p: 4 }} color="text.secondary">
@@ -113,84 +114,131 @@ function AxisChart({ points }) {
       .map((x, i) => `${i ? "L" : "M"} ${cx(i)} ${cy(x.sales)}`)
       .join(" ");
   return (
-    <Box
-      ref={scrollRef}
-      onPointerDown={(e) => {
-        if (e.button !== 0) return;
-        dragRef.current = {
-          x: e.clientX,
-          scrollLeft: scrollRef.current.scrollLeft,
-        };
-        e.currentTarget.setPointerCapture(e.pointerId);
-        e.currentTarget.style.cursor = "grabbing";
-      }}
-      onPointerMove={(e) => {
-        if (dragRef.current)
-          scrollRef.current.scrollLeft =
-            dragRef.current.scrollLeft - (e.clientX - dragRef.current.x);
-      }}
-      onPointerUp={(e) => {
-        dragRef.current = null;
-        e.currentTarget.style.cursor = "grab";
-      }}
-      onPointerCancel={(e) => {
-        dragRef.current = null;
-        e.currentTarget.style.cursor = "grab";
-      }}
-      sx={{
-        overflowX: "auto",
-        cursor: "grab",
-        userSelect: "none",
-        touchAction: "pan-y",
-      }}
-    >
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        width={w}
-        height={h}
-        aria-label="销售额趋势"
+    <Box sx={{ position: "relative" }}>
+      {hovered && (
+        <Paper
+          elevation={4}
+          sx={{
+            position: "absolute",
+            zIndex: 2,
+            top: 10,
+            left: 16,
+            px: 1.5,
+            py: 1,
+            pointerEvents: "none",
+            border: "1px solid #d8e9e1",
+            minWidth: 150,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" display="block">
+            {hovered.date}
+          </Typography>
+          <Typography variant="body2" fontWeight={700} color="primary.main">
+            销售额：{money(hovered.sales)}
+          </Typography>
+          {typeof hovered.profit === "number" && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
+            >
+              利润：{money(hovered.profit)}
+            </Typography>
+          )}
+        </Paper>
+      )}
+      <Box
+        ref={scrollRef}
+        onPointerDown={(e) => {
+          if (e.button !== 0) return;
+          dragRef.current = {
+            x: e.clientX,
+            scrollLeft: scrollRef.current.scrollLeft,
+          };
+          e.currentTarget.setPointerCapture(e.pointerId);
+          e.currentTarget.style.cursor = "grabbing";
+        }}
+        onPointerMove={(e) => {
+          if (dragRef.current)
+            scrollRef.current.scrollLeft =
+              dragRef.current.scrollLeft - (e.clientX - dragRef.current.x);
+        }}
+        onPointerUp={(e) => {
+          dragRef.current = null;
+          e.currentTarget.style.cursor = "grab";
+        }}
+        onPointerCancel={(e) => {
+          dragRef.current = null;
+          e.currentTarget.style.cursor = "grab";
+        }}
+        sx={{
+          overflowX: "auto",
+          cursor: "grab",
+          userSelect: "none",
+          touchAction: "pan-y",
+        }}
       >
-        <text x="16" y="18" fontSize="12" fill="#557269">
-          销售额（元）
-        </text>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <g key={i}>
-            <line
-              x1={p.l}
-              x2={w - p.r}
-              y1={cy(i * step)}
-              y2={cy(i * step)}
-              stroke="#e4eee9"
-            />
-            <text
-              x={p.l - 10}
-              y={cy(i * step) + 4}
-              textAnchor="end"
-              fontSize="11"
-              fill="#6d8279"
-            >
-              {Math.round(i * step).toLocaleString()}
-            </text>
-          </g>
-        ))}
-        <path d={path} fill="none" stroke="#157a62" strokeWidth="3" />
-        {points.map((x, i) => (
-          <g key={x.date}>
-            <circle cx={cx(i)} cy={cy(x.sales)} r="3" fill="#157a62">
-              <title>{`${x.date}：${money(x.sales)}`}</title>
-            </circle>
-            <text
-              x={cx(i)}
-              y={h - (i % 2 ? 18 : 32)}
-              textAnchor="middle"
-              fontSize="10"
-              fill="#6d8279"
-            >
-              {x.date.slice(5)}
-            </text>
-          </g>
-        ))}
-      </svg>
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          width={w}
+          height={h}
+          aria-label="销售额趋势"
+        >
+          <text x="16" y="18" fontSize="12" fill="#557269">
+            销售额（元）
+          </text>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <g key={i}>
+              <line
+                x1={p.l}
+                x2={w - p.r}
+                y1={cy(i * step)}
+                y2={cy(i * step)}
+                stroke="#e4eee9"
+              />
+              <text
+                x={p.l - 10}
+                y={cy(i * step) + 4}
+                textAnchor="end"
+                fontSize="11"
+                fill="#6d8279"
+              >
+                {Math.round(i * step).toLocaleString()}
+              </text>
+            </g>
+          ))}
+          <path d={path} fill="none" stroke="#157a62" strokeWidth="3" />
+          {points.map((x, i) => (
+            <g key={x.date}>
+              <circle
+                cx={cx(i)}
+                cy={cy(x.sales)}
+                r="7"
+                fill="#157a62"
+                stroke="#fff"
+                strokeWidth="2"
+                tabIndex="0"
+                aria-label={`${x.date} 销售额 ${money(x.sales)}`}
+                onMouseEnter={() => setHovered(x)}
+                onMouseLeave={() => setHovered(null)}
+                onFocus={() => setHovered(x)}
+                onBlur={() => setHovered(null)}
+              >
+                <title>{`${x.date}：${money(x.sales)}`}</title>
+              </circle>
+              <text
+                x={cx(i)}
+                y={h - (i % 2 ? 18 : 32)}
+                textAnchor="middle"
+                fontSize="10"
+                fill="#6d8279"
+              >
+                {x.date.slice(5)}
+              </text>
+            </g>
+          ))}
+        </svg>
+      </Box>
     </Box>
   );
 }
@@ -289,14 +337,17 @@ export default function AnalysisV2() {
             .filter((x) => x.product_name === selected)
             .sort((a, b) => a.stat_date.localeCompare(b.stat_date))
         : chartData.sort((a, b) => a.stat_date.localeCompare(b.stat_date)),
-    map = {};
-  rows.forEach(
-    (x) => (map[x.stat_date] = (map[x.stat_date] || 0) + x.actual_sales),
-  );
+    map = {},
+    profitMap = {};
+  rows.forEach((x) => {
+    map[x.stat_date] = (map[x.stat_date] || 0) + x.actual_sales;
+    profitMap[x.stat_date] = (profitMap[x.stat_date] || 0) + x.profit;
+  });
   const chartRangeStart = start === end ? shiftDate(end, -6) : start;
   const points = daysBetween(chartRangeStart, end).map((date) => ({
     date,
     sales: map[date] || 0,
+    profit: profitMap[date] || 0,
   }));
   const trendData = chartRows.length ? chartRows : data;
   const summary = products
