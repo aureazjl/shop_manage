@@ -14,7 +14,7 @@ export default function Login({ setup, onSuccess }) {
       const raw = await response.text();
       let data = {};
       try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: `服务器返回异常（HTTP ${response.status}）` }; }
-      if (!response.ok) throw new Error(data.error || '操作失败');
+      if (!response.ok) throw new Error(data.error || (response.status === 401 ? '账号或密码错误' : `登录失败（HTTP ${response.status}）`));
       if (setup) {
         const login = await fetch(`${API}/api/auth/login`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
         if (!login.ok) {
