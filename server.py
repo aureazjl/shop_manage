@@ -121,18 +121,18 @@ class Handler(SimpleHTTPRequestHandler):
      for merged in ws.merged_cells.ranges:
       if merged.min_col==merged.max_col and merged.min_col in merged_rows:
        merged_rows[merged.min_col].update(range(merged.min_row,merged.max_row+1))
-      for excel_row,r in enumerate(rows[1:],start=2):
-       if len(r)<20:continue
-       if r[0]: current_date=excel_date(r[0])
-       product_name=str(r[5] or '').strip()
-       if not current_date or not product_name or product_name in ('产品名称','商品名称') or any(x in product_name for x in ('合计','总计','小计')):continue
-       if r[1]: current_department=str(r[1]).strip()
-       if r[2]: current_manager=str(r[2]).strip()
-       if r[3]: current_promotion_leader=str(r[3]).strip()
-       department=current_department if (r[1] or excel_row in merged_rows[2]) else ''
-       manager=current_manager if (r[2] or excel_row in merged_rows[3]) else ''
-       promotion_leader=current_promotion_leader if (r[3] or excel_row in merged_rows[4]) else ''
-       values.append((current_date,department,manager,promotion_leader,r[4] or '',product_name,*[num(x) for x in r[6:20]],ws.title,h))
+     for excel_row,r in enumerate(rows[1:],start=2):
+      if len(r)<20:continue
+      if r[0]: current_date=excel_date(r[0])
+      product_name=str(r[5] or '').strip()
+      if not current_date or not product_name or product_name in ('产品名称','商品名称') or any(x in product_name for x in ('合计','总计','小计')):continue
+      if r[1]: current_department=str(r[1]).strip()
+      if r[2]: current_manager=str(r[2]).strip()
+      if r[3]: current_promotion_leader=str(r[3]).strip()
+      department=current_department if (r[1] or excel_row in merged_rows[2]) else ''
+      manager=current_manager if (r[2] or excel_row in merged_rows[3]) else ''
+      promotion_leader=current_promotion_leader if (r[3] or excel_row in merged_rows[4]) else ''
+      values.append((current_date,department,manager,promotion_leader,r[4] or '',product_name,*[num(x) for x in r[6:20]],ws.title,h))
     else:
      csv_text=raw.decode('utf-8-sig',errors='ignore').replace('\x00','')
      data=list(csv.reader(io.StringIO(csv_text, newline='')));
