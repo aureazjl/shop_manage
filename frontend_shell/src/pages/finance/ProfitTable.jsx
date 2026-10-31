@@ -82,7 +82,12 @@ export default function ProfitTable() {
           </Stack>
         </Paper>
       </Box>)}
-    </Stack> : <Paper sx={{ overflow: 'auto' }}>
+    </Stack> : mobile ? <Paper sx={{ overflow: 'hidden' }}>
+      <Table size="small" sx={{ width: '100%', tableLayout: 'fixed', '& .MuiTableCell-root': { px: 0.6, py: 0.9, fontSize: 11, verticalAlign: 'top' }, '& .MuiTableCell-root:nth-of-type(1)': { width: 54 }, '& .MuiTableCell-root:nth-of-type(2)': { width: 54 }, '& .MuiTableCell-root:nth-of-type(3)': { width: 42 }, '& .MuiTableCell-root:nth-of-type(4)': { width: 58 }, '& .MuiTableCell-root:nth-of-type(5)': { width: 'auto' }, '& .MuiTableCell-root:nth-of-type(6)': { width: 65 }, '& .MuiTableCell-root:nth-of-type(7)': { width: 62 } }}>
+        <TableHead><TableRow>{['日期', '部门', '主管', '组长', '产品', '销售额', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
+        <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-all' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
+      </Table>
+    </Paper> : <Paper sx={{ overflow: 'auto' }}>
       <Table size="small" sx={{ minWidth: 1000 }}>
         <TableHead><TableRow>{['日期', '部门', '主管', '推广组长', '产品名称', '真实销售额', '运营成本', '货品成本', '其他费用', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
         <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.operating_cost), money(r.goods_cost), money(r.other_fee), money(r.profit)].map((x, j) => <TableCell key={j}>{x}</TableCell>)}</TableRow>)}</TableBody>
