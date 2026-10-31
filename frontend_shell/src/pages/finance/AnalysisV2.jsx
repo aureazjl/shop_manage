@@ -426,7 +426,6 @@ export default function AnalysisV2() {
             <Typography variant="h6" fontWeight={700}>
               {current === "__all__" ? "全部产品" : current}
             </Typography>
-            <Typography color="text.secondary">销售额趋势</Typography>
           </Box>
           <Button href="/" variant="outlined">
             返回仪表盘
@@ -438,9 +437,6 @@ export default function AnalysisV2() {
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
           <Typography variant="h6" fontWeight={700}>
             产品列表
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            点击表头箭头排序 · 共 {products.length} 个产品
           </Typography>
         </Stack>
         <Divider />
