@@ -37,16 +37,7 @@ def session_user(c,handler):
 def is_admin(user): return bool(user and user['role']=='admin')
 def admin_metrics(c):
  rows=c.execute('SELECT COUNT(*) AS count, MIN(stat_date) AS start_date, MAX(stat_date) AS end_date FROM product_profit_daily').fetchone()
- try:
-  import psutil
-  memory=psutil.Process(os.getpid()).memory_info().rss
- except Exception:
-  try:
-   import ctypes
-   class Counters(ctypes.Structure): _fields_=[('cb',ctypes.c_ulong),('page_fault',ctypes.c_ulong),('peak_working_set',ctypes.c_size_t),('working_set',ctypes.c_size_t)]
-   counters=Counters(); counters.cb=ctypes.sizeof(counters); ctypes.windll.psapi.GetProcessMemoryInfo(ctypes.windll.kernel32.GetCurrentProcess(),ctypes.byref(counters),counters.cb); memory=counters.working_set
-  except Exception: memory=0
- return {'database_bytes':os.path.getsize(DB) if os.path.exists(DB) else 0,'process_memory_bytes':memory,'row_count':rows['count'] or 0,'start_date':rows['start_date'],'end_date':rows['end_date']}
+ return {'database_bytes':os.path.getsize(DB) if os.path.exists(DB) else 0,'upload_storage_bytes':0,'row_count':rows['count'] or 0,'start_date':rows['start_date'],'end_date':rows['end_date']}
 def num(x):
  try:
   text=str(x or 0).strip().replace(',','').replace(' ','').replace('，','').replace('￥','').replace('¥','').replace('元','').replace('日元','')
