@@ -21,7 +21,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
-export default function MiniDrawer() {
+export default function MiniDrawer({ user }) {
   const [mode, setMode] = React.useState(
     localStorage.getItem("currentMode") ?? "light"
   );
@@ -51,6 +51,7 @@ export default function MiniDrawer() {
           handleDrawerOpen={handleDrawerOpen}
           setMode={setMode}
           onLogout={handleLogout}
+          user={user}
         />}
         <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} />
 

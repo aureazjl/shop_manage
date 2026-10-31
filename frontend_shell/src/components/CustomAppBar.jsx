@@ -6,6 +6,7 @@ import {
   Box,
   Menu,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
@@ -34,7 +35,7 @@ const AppBar = styled(MuiAppBar, {
     },
   }),
 }));
-export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile, onLogout }) {
+export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile, onLogout, user }) {
   const navigate = useNavigate();
   const [accountAnchor, setAccountAnchor] = React.useState(null);
   const accountOpen = Boolean(accountAnchor);
@@ -60,6 +61,9 @@ export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile, onL
         <Box flexGrow={1} />
 
         <Stack direction="row">
+          <Typography sx={{ alignSelf: "center", mr: 1.5, fontSize: 13, color: "inherit" }}>
+            {user?.role === "admin" ? "管理员" : "财务"}
+          </Typography>
           <IconButton color="inherit" onClick={onHideMobile} sx={{ display: { xs: "inline-flex", sm: "none" } }} aria-label="隐藏顶部导航">
             <VisibilityOffOutlinedIcon />
           </IconButton>

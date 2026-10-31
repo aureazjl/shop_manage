@@ -13,12 +13,13 @@ class AppErrorBoundary extends React.Component {
 }
 
 export default function AuthGate() {
-  const [state, setState] = React.useState({ loading: true, setup: false, authenticated: false });
+  const [state, setState] = React.useState({ loading: true, setup: false, authenticated: false, user: null });
   const refresh = React.useCallback(async () => {
     const status = await fetch(`${API}/api/auth/status`, { credentials: 'include' }).then(r => r.json());
     if (status.setup_required) return setState({ loading: false, setup: true, authenticated: false });
     const me = await fetch(`${API}/api/auth/me`, { credentials: 'include' });
-    setState({ loading: false, setup: false, authenticated: me.ok });
+    const data = me.ok ? await me.json() : null;
+    setState({ loading: false, setup: false, authenticated: me.ok, user: data?.user || null });
   }, []);
   React.useEffect(() => { refresh().catch(() => setState({ loading: false, setup: false, authenticated: false })); }, [refresh]);
   if (state.loading) return <div style={{ padding: 24 }}>正在检查登录状态…</div>;
@@ -31,5 +32,5 @@ export default function AuthGate() {
     };
     window.__financeFetchPatched = true;
   }
-  return <AppErrorBoundary><App /></AppErrorBoundary>;
+  return <AppErrorBoundary><App user={state.user} /></AppErrorBoundary>;
 }
