@@ -24,6 +24,7 @@ import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { useLocation, useNavigate } from "react-router-dom";
 import { grey } from "@mui/material/colors";
@@ -80,6 +81,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 const Array1 = [
   { text: "总览仪表盘", icon: <HomeOutlinedIcon />, path: "/" },
   { text: "利润表", icon: <ReceiptOutlinedIcon />, path: "/profit-table" },
+  { text: "导入数据", icon: <UploadFileRoundedIcon />, path: "/import" },
   {
     text: "经营分析",
     icon: <TimelineOutlinedIcon />,
