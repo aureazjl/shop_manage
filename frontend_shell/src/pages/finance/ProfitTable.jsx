@@ -11,6 +11,7 @@ const plainMoney = v => new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 
 const shortDate = value => value ? value.slice(5) : '—';
 const opts = (rows, key) => [...new Set(rows.map(r => r[key]).filter(Boolean))].sort();
 const SortHead = ({ label, field, sort, direction, onSort }) => <TableCell sx={{ whiteSpace: 'nowrap' }}><Stack direction="row" spacing={0.25} alignItems="center">{label}<IconButton size="small" aria-label={`按${label}排序`} onClick={() => onSort(field)} sx={{ p: 0.25, width: 22, height: 22, flexShrink: 0, color: sort === field ? 'primary.main' : 'text.secondary' }}>{sort === field && direction === 'asc' ? <ArrowUpwardOutlinedIcon sx={{ fontSize: 15 }} /> : <ArrowDownwardOutlinedIcon sx={{ fontSize: 15 }} />}</IconButton></Stack></TableCell>;
+const MobileSortHead = ({ label, field, sort, direction, onSort }) => <TableCell onClick={() => onSort(field)} sx={{ whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', color: sort === field ? 'primary.main' : 'inherit' }}>{label}{sort === field ? (direction === 'asc' ? ' ↑' : ' ↓') : ''}</TableCell>;
 
 export default function ProfitTable() {
   const [rows, setRows] = React.useState([]);
@@ -99,7 +100,7 @@ export default function ProfitTable() {
       </Box>)}
     </Stack> : mobile ? <Paper sx={{ overflow: 'hidden' }}>
       <Table size="small" sx={{ width: '100%', tableLayout: 'auto', '& .MuiTableCell-root': { px: 0.25, py: 0.9, fontSize: 10.5, verticalAlign: 'top', overflow: 'hidden', textOverflow: 'ellipsis' }, '& .MuiTableCell-root:nth-of-type(1)': { whiteSpace: 'nowrap', px: 0.2 }, '& .MuiTableCell-root:nth-of-type(2)': { maxWidth: 48 }, '& .MuiTableCell-root:nth-of-type(3)': { maxWidth: 48 }, '& .MuiTableCell-root:nth-of-type(4)': { maxWidth: 48 }, '& .MuiTableCell-root:nth-of-type(5)': { maxWidth: 110 }, '& .MuiTableCell-root:nth-of-type(6)': { whiteSpace: 'nowrap', px: 0.2 }, '& .MuiTableCell-root:nth-of-type(7)': { whiteSpace: 'nowrap', px: 0.2 } }}>
-        <TableHead><TableRow><TableCell>日期</TableCell><TableCell>部门</TableCell><TableCell>主管</TableCell><TableCell>组长</TableCell><TableCell>产品</TableCell><SortHead label="销售额" field="actual_sales" sort={sort} direction={direction} onSort={onSort} /><SortHead label="利润" field="profit" sort={sort} direction={direction} onSort={onSort} /></TableRow></TableHead>
+        <TableHead><TableRow><TableCell>日期</TableCell><TableCell>部门</TableCell><TableCell>主管</TableCell><TableCell>组长</TableCell><TableCell>产品</TableCell><MobileSortHead label="销售额" field="actual_sales" sort={sort} direction={direction} onSort={onSort} /><MobileSortHead label="利润" field="profit" sort={sort} direction={direction} onSort={onSort} /></TableRow></TableHead>
         <TableBody>{sorted.map((r, i) => <TableRow key={i} hover>{[shortDate(r.stat_date), r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, plainMoney(r.actual_sales), plainMoney(r.profit)].map((x, j) => <TableCell key={j}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
     </Paper> : <Paper sx={{ overflow: 'auto' }}>
