@@ -5,6 +5,8 @@ import { API } from '../../App';
 import FinanceDateRange from '../../components/FinanceDateRange';
 
 const money = v => new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 0 }).format(v || 0).replace('CN¥', '¥');
+const plainMoney = v => new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 }).format(v || 0);
+const shortDate = value => value ? value.slice(5) : '—';
 const opts = (rows, key) => [...new Set(rows.map(r => r[key]).filter(Boolean))].sort();
 
 export default function ProfitTable() {
@@ -83,9 +85,9 @@ export default function ProfitTable() {
         </Paper>
       </Box>)}
     </Stack> : mobile ? <Paper sx={{ overflow: 'hidden' }}>
-      <Table size="small" sx={{ width: '100%', tableLayout: 'fixed', '& .MuiTableCell-root': { px: 0.6, py: 0.9, fontSize: 11, verticalAlign: 'top' }, '& .MuiTableCell-root:nth-of-type(1)': { width: 54 }, '& .MuiTableCell-root:nth-of-type(2)': { width: 54 }, '& .MuiTableCell-root:nth-of-type(3)': { width: 42 }, '& .MuiTableCell-root:nth-of-type(4)': { width: 58 }, '& .MuiTableCell-root:nth-of-type(5)': { width: 'auto' }, '& .MuiTableCell-root:nth-of-type(6)': { width: 65 }, '& .MuiTableCell-root:nth-of-type(7)': { width: 62 } }}>
+      <Table size="small" sx={{ width: '100%', tableLayout: 'fixed', '& .MuiTableCell-root': { px: 0.6, py: 0.9, fontSize: 11, verticalAlign: 'top' }, '& .MuiTableCell-root:nth-of-type(1)': { width: 44 }, '& .MuiTableCell-root:nth-of-type(2)': { width: 48 }, '& .MuiTableCell-root:nth-of-type(3)': { width: 40 }, '& .MuiTableCell-root:nth-of-type(4)': { width: 48 }, '& .MuiTableCell-root:nth-of-type(5)': { width: 'auto' }, '& .MuiTableCell-root:nth-of-type(6)': { width: 58 }, '& .MuiTableCell-root:nth-of-type(7)': { width: 58 } }}>
         <TableHead><TableRow>{['日期', '部门', '主管', '组长', '产品', '销售额', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
-        <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-all' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
+        <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[shortDate(r.stat_date), r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, plainMoney(r.actual_sales), plainMoney(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-word' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
     </Paper> : <Paper sx={{ overflow: 'auto' }}>
       <Table size="small" sx={{ minWidth: 1000 }}>
