@@ -37,7 +37,8 @@ def session_user(c,handler):
 def is_admin(user): return bool(user and user['role']=='admin')
 def admin_metrics(c):
  rows=c.execute('SELECT COUNT(*) AS count, MIN(stat_date) AS start_date, MAX(stat_date) AS end_date FROM product_profit_daily').fetchone()
- return {'database_bytes':os.path.getsize(DB) if os.path.exists(DB) else 0,'upload_storage_bytes':0,'row_count':rows['count'] or 0,'start_date':rows['start_date'],'end_date':rows['end_date']}
+ daily=[dict(x) for x in c.execute('SELECT stat_date, COUNT(*) AS row_count FROM product_profit_daily GROUP BY stat_date ORDER BY stat_date DESC').fetchall()]
+ return {'database_bytes':os.path.getsize(DB) if os.path.exists(DB) else 0,'upload_storage_bytes':0,'row_count':rows['count'] or 0,'start_date':rows['start_date'],'end_date':rows['end_date'],'daily':daily}
 def num(x):
  try:
   text=str(x or 0).strip().replace(',','').replace(' ','').replace('，','').replace('￥','').replace('¥','').replace('元','').replace('日元','')
@@ -128,10 +129,15 @@ class Handler(SimpleHTTPRequestHandler):
    user=session_user(c,self)
    if not is_admin(user): return self.send_json({'error':'仅管理员可执行删除'},403)
    try:
-    data=json_body(self); start=str(data.get('start_date','')).strip(); end=str(data.get('end_date','')).strip()
+    data=json_body(self); dates=[str(x).strip() for x in data.get('dates',[]) if str(x).strip()]; start=str(data.get('start_date','')).strip(); end=str(data.get('end_date','')).strip()
    except: return self.send_json({'error':'请求格式错误'},400)
-   if not start or not end or len(start)!=10 or len(end)!=10 or start>end: return self.send_json({'error':'请选择有效的日期范围'},400)
-   deleted=c.execute('DELETE FROM product_profit_daily WHERE stat_date>=? AND stat_date<=?',(start,end)).rowcount; c.commit()
+   if dates:
+    if any(len(x)!=10 for x in dates): return self.send_json({'error':'日期格式无效'},400)
+    marks=','.join('?'*len(dates)); deleted=c.execute(f'DELETE FROM product_profit_daily WHERE stat_date IN ({marks})',dates).rowcount
+   else:
+    if not start or not end or len(start)!=10 or len(end)!=10 or start>end: return self.send_json({'error':'请选择有效的日期范围'},400)
+    deleted=c.execute('DELETE FROM product_profit_daily WHERE stat_date>=? AND stat_date<=?',(start,end)).rowcount
+   c.commit()
    return self.send_json({'ok':True,'deleted':deleted,'metrics':admin_metrics(c)})
   if path!='/api/import':self.send_error(404);return
   if not session_user(c,self):return self.send_json({'error':'请先登录'},401)
