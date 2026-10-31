@@ -62,7 +62,7 @@ export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile, onL
 
         <Stack direction="row">
           <Typography sx={{ alignSelf: "center", mr: 1.5, fontSize: 13, color: "inherit" }}>
-            {user?.role === "admin" ? "管理员" : "财务"}
+            {user?.role === "admin" || user?.username === "admin" ? "管理员" : "财务"}
           </Typography>
           <IconButton color="inherit" onClick={onHideMobile} sx={{ display: { xs: "inline-flex", sm: "none" } }} aria-label="隐藏顶部导航">
             <VisibilityOffOutlinedIcon />
