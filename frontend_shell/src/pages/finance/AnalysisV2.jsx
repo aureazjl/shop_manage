@@ -293,11 +293,12 @@ const SortHead = ({ label, field, sort, setSort, direction, setDirection }) => (
   </TableCell>
 );
 export default function AnalysisV2() {
-  const n = new Date(),
-    pad = (x) => String(x).padStart(2, "0"),
-    m = `${n.getFullYear()}-${pad(n.getMonth() + 1)}`,
-    first = `${m}-01`,
-    today = `${m}-${pad(n.getDate())}`;
+  const n = new Date();
+  n.setDate(n.getDate() - 1);
+  const pad = (x) => String(x).padStart(2, "0"),
+    yesterday = `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`,
+    first = yesterday,
+    today = yesterday;
   const [d, setD] = React.useState(null),
     [start, setStart] = React.useState(first),
     [end, setEnd] = React.useState(today),
