@@ -39,10 +39,7 @@ export default function ProfitTable() {
   const productRows = managerRows.filter(r => !manager || r.manager === manager);
 
   return <>
-    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-      <Typography variant="h4" fontWeight={700}>利润表</Typography>
-      {mobile && <Button size="small" variant="outlined" onClick={() => setShowTable(value => !value)}>{showTable ? '切换卡片' : '切换表格'}</Button>}
-    </Stack>
+    <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>利润表</Typography>
     <Paper sx={{ p: 2, mb: 2 }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} flexWrap="wrap" gap={1.5}>
         <FinanceDateRange start={start} end={end} onChange={(a, b) => { setStart(a); setEnd(b); }} />
@@ -56,6 +53,7 @@ export default function ProfitTable() {
           <MenuItem value="">全部产品</MenuItem>{opts(productRows, 'product_name').map(x => <MenuItem key={x} value={x}>{x}</MenuItem>)}
         </TextField>
       </Stack>
+      {mobile && <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1.25 }}><Button size="small" variant="outlined" onClick={() => setShowTable(value => !value)}>{showTable ? '切换卡片' : '切换表格'}</Button></Box>}
     </Paper>
     {mobile && !showTable ? <Stack spacing={1.5}>
       {Object.entries(grouped).map(([departmentName, departmentRows]) => <Box key={departmentName}>
