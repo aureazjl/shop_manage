@@ -51,22 +51,24 @@ export default function ProfitTable() {
         </TextField>
       </Stack>
     </Paper>
-    {mobile ? <Stack spacing={2}>
+    {mobile ? <Stack spacing={1.5}>
       {Object.entries(grouped).map(([departmentName, departmentRows]) => <Box key={departmentName}>
-        <Typography variant="h6" sx={{ mb: 1, color: 'primary.dark' }}>{departmentName}</Typography>
-        <Stack spacing={1.25}>{departmentRows.map((r, i) => <Paper key={`${departmentName}-${i}`} sx={{ p: 1.75 }}>
-        <Stack direction="row" justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
-          <Typography fontWeight={700} sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.product_name}</Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{r.stat_date}</Typography>
-        </Stack>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1, mb: 1.25 }}>
-          {[['部门', r.department || '—'], ['主管', r.manager || '—'], ['推广组长', r.promotion_leader || '—'], ['销售额', money(r.actual_sales)]].map(([label, value]) => <Box key={label}><Typography variant="caption" color="text.secondary">{label}</Typography><Typography variant="body2" fontWeight={label === '销售额' ? 700 : 500} noWrap>{value}</Typography></Box>)}
-        </Box>
-        <Stack direction="row" justifyContent="space-between" sx={{ pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="caption" color="text.secondary">利润</Typography>
-          <Typography variant="body2" fontWeight={700} color={r.profit < 0 ? 'error.main' : 'primary.main'}>{money(r.profit)}</Typography>
-        </Stack>
-        </Paper>)}</Stack>
+        <Paper sx={{ p: 1.5 }}>
+          <Typography variant="body1" fontWeight={800} color="primary.dark" sx={{ mb: 0.75 }}>{departmentName}</Typography>
+          <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+            {departmentRows.map((r, i) => <Box key={`${departmentName}-${i}`} sx={{ py: 1 }}>
+              <Stack direction="row" justifyContent="space-between" gap={1}>
+                <Typography variant="body2" fontWeight={700} noWrap sx={{ minWidth: 0 }}>{r.product_name}</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{r.stat_date}</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" gap={1} sx={{ mt: 0.45 }}>
+                <Typography variant="caption" color="text.secondary" noWrap>主管：{r.manager || '—'}　推广组长：{r.promotion_leader || '—'}</Typography>
+                <Typography variant="caption" fontWeight={700} color={r.profit < 0 ? 'error.main' : 'primary.main'} sx={{ flexShrink: 0 }}>利润 {money(r.profit)}</Typography>
+              </Stack>
+              <Typography variant="caption" color="text.secondary">销售额 {money(r.actual_sales)}</Typography>
+            </Box>)}
+          </Stack>
+        </Paper>
       </Box>)}
     </Stack> : <Paper sx={{ overflow: 'auto' }}>
       <Table size="small" sx={{ minWidth: 1000 }}>
