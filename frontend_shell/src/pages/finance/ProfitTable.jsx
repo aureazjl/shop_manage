@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, Button, useMediaQuery } from '@mui/material';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, Button, ToggleButtonGroup, ToggleButton, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { API } from '../../App';
 import FinanceDateRange from '../../components/FinanceDateRange';
@@ -53,7 +53,15 @@ export default function ProfitTable() {
           <MenuItem value="">全部产品</MenuItem>{opts(productRows, 'product_name').map(x => <MenuItem key={x} value={x}>{x}</MenuItem>)}
         </TextField>
       </Stack>
-      {mobile && <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1.25 }}><Button size="small" variant="outlined" onClick={() => setShowTable(value => !value)}>{showTable ? '切换卡片' : '切换表格'}</Button></Box>}
+      {mobile && <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1.25 }}>
+        <Stack direction="row" spacing={0.75} alignItems="center">
+          <Typography variant="caption" color="text.secondary">展示方式</Typography>
+          <ToggleButtonGroup value={showTable ? 'table' : 'cards'} exclusive size="small" onChange={(_, value) => value && setShowTable(value === 'table')} sx={{ bgcolor: 'background.default', borderRadius: 2, '& .MuiToggleButton-root': { border: 0, px: 1.25, py: 0.45, fontSize: 12, color: 'text.secondary' }, '& .Mui-selected': { bgcolor: 'primary.main !important', color: '#fff !important', borderRadius: '8px !important' } }}>
+            <ToggleButton value="cards">卡片</ToggleButton>
+            <ToggleButton value="table">表格</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
+      </Box>}
     </Paper>
     {mobile && !showTable ? <Stack spacing={1.5}>
       {Object.entries(grouped).map(([departmentName, departmentRows]) => <Box key={departmentName}>
