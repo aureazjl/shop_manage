@@ -331,8 +331,6 @@ export default function AnalysisV2() {
   const data = d.rows || [],
     products = [...new Set(data.map((x) => x.product_name).filter(Boolean))],
     asOf = data.reduce((a, x) => (x.stat_date > a ? x.stat_date : a), "");
-  if (!products.length)
-    return <Paper sx={{ p: 3 }}>当前日期范围暂无产品数据</Paper>;
   const current = products.includes(selected) ? selected : "__all__",
     chartData = chartRows.length ? chartRows : data,
     rows =
@@ -434,7 +432,7 @@ export default function AnalysisV2() {
             返回仪表盘
           </Button>
         </Stack>
-        <AxisChart points={points} />
+        {products.length ? <AxisChart points={points} /> : <Box sx={{ minHeight: 230, display: "flex", alignItems: "center", justifyContent: "center" }}><Typography color="text.secondary">当前日期范围暂无产品数据</Typography></Box>}
       </Paper>
       <Paper sx={{ p: 2.5 }}>
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
@@ -446,7 +444,7 @@ export default function AnalysisV2() {
           </Typography>
         </Stack>
         <Divider />
-        <Stack
+        {products.length ? <Stack
           spacing={1.25}
           sx={{ display: { xs: "flex", sm: "none" }, mt: 1.5 }}
         >
@@ -521,7 +519,7 @@ export default function AnalysisV2() {
               </Stack>
             </Paper>
           ))}
-        </Stack>
+        </Stack> : <Box sx={{ minHeight: 180, display: "flex", alignItems: "center", justifyContent: "center" }}><Typography color="text.secondary">当前日期范围暂无产品数据</Typography></Box>}
         <Box sx={{ overflowX: "auto", display: { xs: "none", sm: "block" } }}>
           <Table
             size="small"
