@@ -10,7 +10,7 @@ const money = v => new Intl.NumberFormat('zh-CN', { style: 'currency', currency:
 const plainMoney = v => new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 }).format(v || 0);
 const shortDate = value => value ? value.slice(5) : '—';
 const opts = (rows, key) => [...new Set(rows.map(r => r[key]).filter(Boolean))].sort();
-const SortHead = ({ label, field, sort, direction, onSort }) => <TableCell sx={{ whiteSpace: 'nowrap' }}><Stack direction="row" spacing={0.25} alignItems="center">{label}<IconButton size="small" aria-label={`按${label}排序`} onClick={() => onSort(field)} sx={{ p: 0.25, color: sort === field ? 'primary.main' : 'text.secondary' }}>{sort === field && direction === 'asc' ? <ArrowUpwardOutlinedIcon sx={{ fontSize: 15 }} /> : <ArrowDownwardOutlinedIcon sx={{ fontSize: 15 }} />}</IconButton></Stack></TableCell>;
+const SortHead = ({ label, field, sort, direction, onSort }) => <TableCell sx={{ whiteSpace: 'nowrap' }}><Stack direction="row" spacing={0.25} alignItems="center">{label}<IconButton size="small" aria-label={`按${label}排序`} onClick={() => onSort(field)} sx={{ p: 0.25, width: 22, height: 22, flexShrink: 0, color: sort === field ? 'primary.main' : 'text.secondary' }}>{sort === field && direction === 'asc' ? <ArrowUpwardOutlinedIcon sx={{ fontSize: 15 }} /> : <ArrowDownwardOutlinedIcon sx={{ fontSize: 15 }} />}</IconButton></Stack></TableCell>;
 
 export default function ProfitTable() {
   const [rows, setRows] = React.useState([]);
@@ -103,7 +103,7 @@ export default function ProfitTable() {
         <TableBody>{sorted.map((r, i) => <TableRow key={i} hover>{[shortDate(r.stat_date), r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, plainMoney(r.actual_sales), plainMoney(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-word' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
     </Paper> : <Paper sx={{ overflow: 'auto' }}>
-      <Table size="small" sx={{ minWidth: 1000 }}>
+      <Table size="small" sx={{ minWidth: 1000, tableLayout: 'fixed', '& .MuiTableCell-root': { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }}>
         <TableHead><TableRow><SortHead label="日期" field="stat_date" sort={sort} direction={direction} onSort={onSort} /><SortHead label="部门" field="department" sort={sort} direction={direction} onSort={onSort} /><SortHead label="主管" field="manager" sort={sort} direction={direction} onSort={onSort} /><SortHead label="推广组长" field="promotion_leader" sort={sort} direction={direction} onSort={onSort} /><SortHead label="产品名称" field="product_name" sort={sort} direction={direction} onSort={onSort} /><SortHead label="真实销售额" field="actual_sales" sort={sort} direction={direction} onSort={onSort} /><SortHead label="运营成本" field="operating_cost" sort={sort} direction={direction} onSort={onSort} /><SortHead label="货品成本" field="goods_cost" sort={sort} direction={direction} onSort={onSort} /><SortHead label="其他费用" field="other_fee" sort={sort} direction={direction} onSort={onSort} /><SortHead label="利润" field="profit" sort={sort} direction={direction} onSort={onSort} /></TableRow></TableHead>
         <TableBody>{sorted.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.operating_cost), money(r.goods_cost), money(r.other_fee), money(r.profit)].map((x, j) => <TableCell key={j}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
