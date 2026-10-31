@@ -33,7 +33,7 @@ export default function FinanceDateRange({ start, end, onChange, label = '日期
           maxDate={today}
           onChange={value => notify(value, endValue)}
           format="YYYY-MM-DD"
-          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error), sx: { flex: 1, minWidth: 0 } } }}
+          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error), sx: { flex: 1, minWidth: 0, '& .MuiInputBase-input': { fontSize: { xs: 12, sm: 14 }, px: { xs: 0.75, sm: 1.5 } }, '& .MuiInputLabel-root': { fontSize: { xs: 11, sm: 14 } }, '& .MuiInputAdornment-root': { ml: { xs: 0.25, sm: 1 } } } } }}
         />
         <Typography color="text.secondary" sx={{ flexShrink: 0, fontSize: { xs: 12, sm: 14 } }}>至</Typography>
         <DatePicker
@@ -43,7 +43,7 @@ export default function FinanceDateRange({ start, end, onChange, label = '日期
           maxDate={today}
           onChange={value => notify(startValue, value)}
           format="YYYY-MM-DD"
-          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error), sx: { flex: 1, minWidth: 0 } } }}
+          slotProps={{ textField: { size: 'small', fullWidth: true, error: Boolean(error), sx: { flex: 1, minWidth: 0, '& .MuiInputBase-input': { fontSize: { xs: 12, sm: 14 }, px: { xs: 0.75, sm: 1.5 } }, '& .MuiInputLabel-root': { fontSize: { xs: 11, sm: 14 } }, '& .MuiInputAdornment-root': { ml: { xs: 0.25, sm: 1 } } } } }}
         />
       </Stack>
       {error && <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>{error}</Typography>}
