@@ -2,19 +2,15 @@ import * as React from "react";
 import {
   Toolbar,
   IconButton,
-  Typography,
   Stack,
   Box,
   Menu,
   MenuItem,
 } from "@mui/material";
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
 import MenuIcon from "@mui/icons-material/Menu";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useNavigate } from "react-router-dom";
 
@@ -38,8 +34,7 @@ const AppBar = styled(MuiAppBar, {
     },
   }),
 }));
-export default function CustomAppBar({ open, handleDrawerOpen, setMode, onHideMobile }) {
-  const theme = useTheme();
+export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile }) {
   const navigate = useNavigate();
   const [accountAnchor, setAccountAnchor] = React.useState(null);
   const accountOpen = Boolean(accountAnchor);
@@ -65,40 +60,6 @@ export default function CustomAppBar({ open, handleDrawerOpen, setMode, onHideMo
         <Box flexGrow={1} />
 
         <Stack direction="row">
-          {theme.palette.mode === "light" ? (
-            <IconButton
-              onClick={() => {
-                localStorage.setItem(
-                  "currentMode",
-                  theme.palette.mode === "dark" ? "light" : "dark"
-                );
-                setMode((prevMode) =>
-                  prevMode === "light" ? "dark" : "light"
-                );
-              }}
-              color="inherit"
-            >
-              <DarkModeOutlinedIcon />
-            </IconButton>
-          ) : (
-            <IconButton
-              onClick={() => {
-                localStorage.setItem(
-                  "currentMode",
-                  theme.palette.mode === "light" ? "dark" : "light"
-                );
-                setMode((prevMode) =>
-                  prevMode === "light" ? "dark" : "light"
-                );
-              }}
-              color="inherit"
-            >
-              <LightModeOutlinedIcon />
-            </IconButton>
-          )}
-          <IconButton color="inherit">
-            <SettingsOutlinedIcon />
-          </IconButton>
           <IconButton color="inherit" onClick={onHideMobile} sx={{ display: { xs: "inline-flex", sm: "none" } }} aria-label="隐藏顶部导航">
             <VisibilityOffOutlinedIcon />
           </IconButton>
