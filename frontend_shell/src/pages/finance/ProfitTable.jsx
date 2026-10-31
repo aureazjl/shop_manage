@@ -11,7 +11,7 @@ const plainMoney = v => new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 
 const shortDate = value => value ? value.slice(5) : '—';
 const opts = (rows, key) => [...new Set(rows.map(r => r[key]).filter(Boolean))].sort();
 const SortHead = ({ label, field, sort, direction, onSort }) => <TableCell sx={{ whiteSpace: 'nowrap' }}><Stack direction="row" spacing={0.25} alignItems="center">{label}<IconButton size="small" aria-label={`按${label}排序`} onClick={() => onSort(field)} sx={{ p: 0.25, width: 22, height: 22, flexShrink: 0, color: sort === field ? 'primary.main' : 'text.secondary' }}>{sort === field && direction === 'asc' ? <ArrowUpwardOutlinedIcon sx={{ fontSize: 15 }} /> : <ArrowDownwardOutlinedIcon sx={{ fontSize: 15 }} />}</IconButton></Stack></TableCell>;
-const MobileSortHead = ({ label, field, sort, direction, onSort }) => <TableCell onClick={() => onSort(field)} sx={{ whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', color: sort === field ? 'primary.main' : 'inherit' }}>{label}{sort === field ? (direction === 'asc' ? ' ↑' : ' ↓') : ''}</TableCell>;
+const MobileSortHead = ({ label, field, sort, onSort }) => <TableCell onClick={() => onSort(field)} sx={{ whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', color: sort === field ? 'primary.main' : 'inherit' }}>{label}</TableCell>;
 
 export default function ProfitTable() {
   const [rows, setRows] = React.useState([]);
