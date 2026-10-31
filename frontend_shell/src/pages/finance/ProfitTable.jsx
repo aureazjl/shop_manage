@@ -29,6 +29,11 @@ export default function ProfitTable() {
     (!manager || r.manager === manager) &&
     (!product || r.product_name === product)
   );
+  const grouped = filtered.reduce((groups, row) => {
+    const key = row.department || '未分配部门';
+    (groups[key] ||= []).push(row);
+    return groups;
+  }, {});
 
   return <>
     <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>利润表</Typography>
@@ -46,8 +51,10 @@ export default function ProfitTable() {
         </TextField>
       </Stack>
     </Paper>
-    {mobile ? <Stack spacing={1.25}>
-      {filtered.map((r, i) => <Paper key={i} sx={{ p: 1.75 }}>
+    {mobile ? <Stack spacing={2}>
+      {Object.entries(grouped).map(([departmentName, departmentRows]) => <Box key={departmentName}>
+        <Typography variant="h6" sx={{ mb: 1, color: 'primary.dark' }}>{departmentName}</Typography>
+        <Stack spacing={1.25}>{departmentRows.map((r, i) => <Paper key={`${departmentName}-${i}`} sx={{ p: 1.75 }}>
         <Stack direction="row" justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
           <Typography fontWeight={700} sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.product_name}</Typography>
           <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{r.stat_date}</Typography>
@@ -59,7 +66,8 @@ export default function ProfitTable() {
           <Typography variant="caption" color="text.secondary">利润</Typography>
           <Typography variant="body2" fontWeight={700} color={r.profit < 0 ? 'error.main' : 'primary.main'}>{money(r.profit)}</Typography>
         </Stack>
-      </Paper>)}
+        </Paper>)}</Stack>
+      </Box>)}
     </Stack> : <Paper sx={{ overflow: 'auto' }}>
       <Table size="small" sx={{ minWidth: 1000 }}>
         <TableHead><TableRow>{['日期', '部门', '主管', '推广组长', '产品名称', '真实销售额', '运营成本', '货品成本', '其他费用', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
