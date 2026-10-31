@@ -91,7 +91,10 @@ class Handler(SimpleHTTPRequestHandler):
   if path=='/api/admin/metrics':
    user=session_user(c,self)
    if not is_admin(user): return self.send_json({'error':'仅管理员可访问'},403)
-   return self.send_json(admin_metrics(c))
+   from urllib.parse import parse_qs
+   query=parse_qs(urlparse(self.path).query); start=query.get('start_date',[''])[0]; end=query.get('end_date',[''])[0]
+   result=admin_metrics(c); result['selected_row_count']=c.execute('SELECT COUNT(*) FROM product_profit_daily WHERE stat_date>=? AND stat_date<=?',(start,end)).fetchone()[0] if start and end else result['row_count']
+   return self.send_json(result)
   if path=='/api/summary':
    from urllib.parse import parse_qs
    query=parse_qs(urlparse(self.path).query); start=query.get('start_date',[''])[0]; end=query.get('end_date',['']); end=end[0] if end else ''
