@@ -9,14 +9,15 @@ import FinanceDateRange from '../../components/FinanceDateRange';
 const money = v => new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', maximumFractionDigits: 0 }).format(v || 0).replace('CN¥', '¥');
 const plainMoney = v => String(Math.round(Number(v) || 0));
 const shortDate = value => value ? value.slice(5) : '—';
+const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); const pad = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const opts = (rows, key) => [...new Set(rows.map(r => r[key]).filter(Boolean))].sort();
 const SortHead = ({ label, field, sort, direction, onSort }) => <TableCell sx={{ whiteSpace: 'nowrap' }}><Stack direction="row" spacing={0.25} alignItems="center">{label}<IconButton size="small" aria-label={`按${label}排序`} onClick={() => onSort(field)} sx={{ p: 0.25, width: 22, height: 22, flexShrink: 0, color: sort === field ? 'primary.main' : 'text.secondary' }}>{sort === field && direction === 'asc' ? <ArrowUpwardOutlinedIcon sx={{ fontSize: 15 }} /> : <ArrowDownwardOutlinedIcon sx={{ fontSize: 15 }} />}</IconButton></Stack></TableCell>;
 const MobileSortHead = ({ label, field, sort, onSort }) => <TableCell onClick={() => onSort(field)} sx={{ whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none', color: sort === field ? 'primary.main' : 'inherit' }}>{label}</TableCell>;
 
 export default function ProfitTable() {
   const [rows, setRows] = React.useState([]);
-  const [start, setStart] = React.useState('');
-  const [end, setEnd] = React.useState('');
+  const [start, setStart] = React.useState(yesterday);
+  const [end, setEnd] = React.useState(yesterday);
   const [department, setDepartment] = React.useState('');
   const [manager, setManager] = React.useState('');
   const [product, setProduct] = React.useState('');
