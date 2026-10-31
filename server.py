@@ -1,4 +1,4 @@
-import csv, hashlib, io, json, os, sqlite3, tempfile, secrets, time
+import csv, hashlib, io, json, os, sqlite3, tempfile, secrets, time, re
 from email import policy
 from email.parser import BytesParser
 from datetime import datetime, timedelta
@@ -33,7 +33,14 @@ def session_user(c,handler):
  row=c.execute('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?',(hashlib.sha256(token.encode()).hexdigest(),int(time.time()))).fetchone()
  return row
 def num(x):
- try:return round(float(str(x or 0).replace(',','').replace('￥','')),2)
+ try:
+  text=str(x or 0).strip().replace(',','').replace(' ','').replace('，','').replace('￥','').replace('¥','').replace('元','').replace('日元','')
+  negative=text.startswith('(') and text.endswith(')')
+  text=text.strip('()')
+  match=re.search(r'-?\d+(?:\.\d+)?',text)
+  if not match:return 0
+  value=float(match.group())
+  return round(-abs(value) if negative else value,2)
  except:return 0
 def excel_date(v):
  if isinstance(v,(int,float)): return (datetime(1899,12,30)+timedelta(days=int(v))).strftime('%Y-%m-%d')
