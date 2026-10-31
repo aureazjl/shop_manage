@@ -53,7 +53,7 @@ export default function MiniDrawer({ user }) {
           onLogout={handleLogout}
           user={user}
         />}
-        <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} />
+        <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} user={user} />
 
 
         <Box component="main" sx={{ flexGrow: 1, p: { xs: 2.25, sm: 3 }, minWidth: 0, overflowX: "hidden", backgroundColor: "background.default", minHeight: "100vh", "@media (min-width:601px)": { "& .MuiTextField-root": { minWidth: 150 } }, "@media (max-width:600px)": { "& .MuiPaper-root": { p: "18px !important" }, "& .profit-table-mobile": { p: "0 !important" }, "& .MuiTypography-h4": { fontSize: "1.8rem", lineHeight: 1.2, letterSpacing: "-0.02em" }, "& .MuiTypography-h6": { fontSize: "1rem", lineHeight: 1.35 }, "& .MuiTypography-body1": { fontSize: "0.9rem" }, "& .MuiTypography-body2": { fontSize: "0.78rem" }, "& .MuiTypography-caption": { fontSize: "0.7rem" }, "& .MuiTableCell-root": { fontSize: "0.75rem" }, "& .MuiLinearProgress-root": { marginTop: "6px" } } }}>

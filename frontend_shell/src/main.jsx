@@ -17,6 +17,7 @@ import ImportData from "./pages/finance/ImportData";
 import Analysis from "./pages/finance/Analysis";
 import AnalysisEmptyGuard from "./pages/finance/AnalysisEmptyGuard";
 import AnalysisV3 from "./pages/finance/AnalysisV3";
+import AdminConsole from "./pages/admin/AdminConsole";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,6 +26,7 @@ const router = createBrowserRouter(
       <Route path="profit-table" element={<ProfitTable />} />
       <Route path="import" element={<ImportData />} />
       <Route path="analysis" element={<AnalysisEmptyGuard />} />
+      <Route path="admin" element={<AdminConsole />} />
     </Route>
   ),
   { basename: import.meta.env.BASE_URL }

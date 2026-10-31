@@ -89,11 +89,12 @@ const Array1 = [
   },
 ];
 
-const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
+const SideBar = ({ open, handleDrawerClose, handleDrawerOpen, user }) => {
   let location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const items = user?.role === "admin" || user?.username === "admin" ? [...Array1, { text: "后台中控", icon: <SettingsOutlinedIcon />, path: "/admin" }] : Array1;
   const drawerContent = (
     <>
       <DrawerHeader>
@@ -103,7 +104,7 @@ const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
       </DrawerHeader>
       <Divider />
       <List>
-        {Array1.map((item) => (
+        {items.map((item) => (
           <ListItem key={item.path} disablePadding sx={{ display: "block" }}>
             <Tooltip title={open ? null : item.text} placement="left">
               <ListItemButton
@@ -132,7 +133,7 @@ const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
           <MenuOutlinedIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: open ? 0.75 : 0, width: open ? "auto" : 0, maxWidth: open ? 310 : 0, overflow: "hidden", opacity: open ? 1 : 0, transform: open ? "translateX(0)" : "translateX(16px)", transition: "all 180ms ease", bgcolor: "background.paper", borderRadius: 3, boxShadow: 3 }}>
-          {Array1.map((item) => (
+          {items.map((item) => (
             <Tooltip key={item.path} title={item.text} placement="top">
               <IconButton
                 size="small"

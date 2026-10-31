@@ -34,6 +34,14 @@ def session_user(c,handler):
  if not token:return None
  row=c.execute('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?',(hashlib.sha256(token.encode()).hexdigest(),int(time.time()))).fetchone()
  return row
+def is_admin(user): return bool(user and user['role']=='admin')
+def admin_metrics(c):
+ rows=c.execute('SELECT COUNT(*) AS count, MIN(stat_date) AS start_date, MAX(stat_date) AS end_date FROM product_profit_daily').fetchone()
+ try:
+  import psutil
+  memory=psutil.Process(os.getpid()).memory_info().rss
+ except Exception: memory=0
+ return {'database_bytes':os.path.getsize(DB) if os.path.exists(DB) else 0,'process_memory_bytes':memory,'row_count':rows['count'] or 0,'start_date':rows['start_date'],'end_date':rows['end_date']}
 def num(x):
  try:
   text=str(x or 0).strip().replace(',','').replace(' ','').replace('，','').replace('￥','').replace('¥','').replace('元','').replace('日元','')
@@ -84,6 +92,10 @@ class Handler(SimpleHTTPRequestHandler):
    user=session_user(c,self)
    return self.send_json({'authenticated':bool(user),'user':{'id':user['id'],'username':user['username'],'role':user['role']} if user else None},200 if user else 401)
   if path.startswith('/api/') and not session_user(c,self):return self.send_json({'error':'请先登录'},401)
+  if path=='/api/admin/metrics':
+   user=session_user(c,self)
+   if not is_admin(user): return self.send_json({'error':'仅管理员可访问'},403)
+   return self.send_json(admin_metrics(c))
   if path=='/api/summary':
    from urllib.parse import parse_qs
    query=parse_qs(urlparse(self.path).query); start=query.get('start_date',[''])[0]; end=query.get('end_date',['']); end=end[0] if end else ''
@@ -113,6 +125,15 @@ class Handler(SimpleHTTPRequestHandler):
    user=session_user(c,self);cookie=self.headers.get('Cookie','');token=next((x.split('=',1)[1] for x in cookie.split(';') if x.strip().startswith('finance_session=')), '')
    if token:c.execute('DELETE FROM sessions WHERE token_hash=?',(hashlib.sha256(token.encode()).hexdigest(),));c.commit()
    self.send_response(200);self.send_header('Set-Cookie','finance_session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/');self.send_header('Content-Type','application/json; charset=utf-8');self.end_headers();self.wfile.write(b'{"ok":true}');return
+  if path=='/api/admin/delete-data':
+   user=session_user(c,self)
+   if not is_admin(user): return self.send_json({'error':'仅管理员可执行删除'},403)
+   try:
+    data=json_body(self); start=str(data.get('start_date','')).strip(); end=str(data.get('end_date','')).strip()
+   except: return self.send_json({'error':'请求格式错误'},400)
+   if not start or not end or len(start)!=10 or len(end)!=10 or start>end: return self.send_json({'error':'请选择有效的日期范围'},400)
+   deleted=c.execute('DELETE FROM product_profit_daily WHERE stat_date>=? AND stat_date<=?',(start,end)).rowcount; c.commit()
+   return self.send_json({'ok':True,'deleted':deleted,'metrics':admin_metrics(c)})
   if path!='/api/import':self.send_error(404);return
   if not session_user(c,self):return self.send_json({'error':'请先登录'},401)
   try:
