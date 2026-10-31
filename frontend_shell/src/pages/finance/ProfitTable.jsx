@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, Button, ToggleButtonGroup, ToggleButton, useMediaQuery } from '@mui/material';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, Button, ToggleButtonGroup, ToggleButton, IconButton, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import ArrowUpwardOutlinedIcon from '@mui/icons-material/ArrowUpwardOutlined';
+import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined';
 import { API } from '../../App';
 import FinanceDateRange from '../../components/FinanceDateRange';
 
@@ -8,6 +10,7 @@ const money = v => new Intl.NumberFormat('zh-CN', { style: 'currency', currency:
 const plainMoney = v => new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 }).format(v || 0);
 const shortDate = value => value ? value.slice(5) : '—';
 const opts = (rows, key) => [...new Set(rows.map(r => r[key]).filter(Boolean))].sort();
+const SortHead = ({ label, field, sort, direction, onSort }) => <TableCell sx={{ whiteSpace: 'nowrap' }}><Stack direction="row" spacing={0.25} alignItems="center">{label}<IconButton size="small" aria-label={`按${label}排序`} onClick={() => onSort(field)} sx={{ p: 0.25, color: sort === field ? 'primary.main' : 'text.secondary' }}>{sort === field && direction === 'asc' ? <ArrowUpwardOutlinedIcon sx={{ fontSize: 15 }} /> : <ArrowDownwardOutlinedIcon sx={{ fontSize: 15 }} />}</IconButton></Stack></TableCell>;
 
 export default function ProfitTable() {
   const [rows, setRows] = React.useState([]);
@@ -17,6 +20,8 @@ export default function ProfitTable() {
   const [manager, setManager] = React.useState('');
   const [product, setProduct] = React.useState('');
   const [showTable, setShowTable] = React.useState(false);
+  const [sort, setSort] = React.useState('stat_date');
+  const [direction, setDirection] = React.useState('desc');
   const mobile = useMediaQuery(useTheme().breakpoints.down('sm'));
 
   React.useEffect(() => {
@@ -39,6 +44,14 @@ export default function ProfitTable() {
   }, {});
   const managerRows = rows.filter(r => !department || r.department === department);
   const productRows = managerRows.filter(r => !manager || r.manager === manager);
+  const sorted = [...filtered].sort((a, b) => {
+    const numeric = ['actual_sales', 'operating_cost', 'goods_cost', 'other_fee', 'profit'];
+    const av = numeric.includes(sort) ? Number(a[sort] || 0) : String(a[sort] || '');
+    const bv = numeric.includes(sort) ? Number(b[sort] || 0) : String(b[sort] || '');
+    const result = av > bv ? 1 : av < bv ? -1 : 0;
+    return direction === 'asc' ? result : -result;
+  });
+  const onSort = field => { if (sort === field) setDirection(value => value === 'asc' ? 'desc' : 'asc'); else { setSort(field); setDirection('desc'); } };
 
   return <>
     <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>利润表</Typography>
@@ -70,7 +83,7 @@ export default function ProfitTable() {
         <Paper sx={{ p: 1.5 }}>
           <Typography variant="body1" fontWeight={800} color="primary.dark" sx={{ mb: 0.75 }}>{departmentName}</Typography>
           <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
-            {departmentRows.map((r, i) => <Box key={`${departmentName}-${i}`} sx={{ py: 1 }}>
+            {departmentRows.filter(r => sorted.includes(r)).sort((a, b) => sorted.indexOf(a) - sorted.indexOf(b)).map((r, i) => <Box key={`${departmentName}-${i}`} sx={{ py: 1 }}>
               <Stack direction="row" justifyContent="space-between" gap={1}>
                 <Typography variant="body2" fontWeight={700} noWrap sx={{ minWidth: 0 }}>{r.product_name}</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{r.stat_date}</Typography>
@@ -87,12 +100,12 @@ export default function ProfitTable() {
     </Stack> : mobile ? <Paper sx={{ overflow: 'hidden' }}>
       <Table size="small" sx={{ width: '100%', tableLayout: 'fixed', '& .MuiTableCell-root': { px: 0.6, py: 0.9, fontSize: 11, verticalAlign: 'top' }, '& .MuiTableCell-root:nth-of-type(1)': { width: 44 }, '& .MuiTableCell-root:nth-of-type(2)': { width: 48 }, '& .MuiTableCell-root:nth-of-type(3)': { width: 40 }, '& .MuiTableCell-root:nth-of-type(4)': { width: 48 }, '& .MuiTableCell-root:nth-of-type(5)': { width: 'auto' }, '& .MuiTableCell-root:nth-of-type(6)': { width: 58 }, '& .MuiTableCell-root:nth-of-type(7)': { width: 58 } }}>
         <TableHead><TableRow>{['日期', '部门', '主管', '组长', '产品', '销售额', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
-        <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[shortDate(r.stat_date), r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, plainMoney(r.actual_sales), plainMoney(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-word' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
+        <TableBody>{sorted.map((r, i) => <TableRow key={i} hover>{[shortDate(r.stat_date), r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, plainMoney(r.actual_sales), plainMoney(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-word' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
     </Paper> : <Paper sx={{ overflow: 'auto' }}>
       <Table size="small" sx={{ minWidth: 1000 }}>
-        <TableHead><TableRow>{['日期', '部门', '主管', '推广组长', '产品名称', '真实销售额', '运营成本', '货品成本', '其他费用', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
-        <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.operating_cost), money(r.goods_cost), money(r.other_fee), money(r.profit)].map((x, j) => <TableCell key={j}>{x}</TableCell>)}</TableRow>)}</TableBody>
+        <TableHead><TableRow><SortHead label="日期" field="stat_date" sort={sort} direction={direction} onSort={onSort} /><SortHead label="部门" field="department" sort={sort} direction={direction} onSort={onSort} /><SortHead label="主管" field="manager" sort={sort} direction={direction} onSort={onSort} /><SortHead label="推广组长" field="promotion_leader" sort={sort} direction={direction} onSort={onSort} /><SortHead label="产品名称" field="product_name" sort={sort} direction={direction} onSort={onSort} /><SortHead label="真实销售额" field="actual_sales" sort={sort} direction={direction} onSort={onSort} /><SortHead label="运营成本" field="operating_cost" sort={sort} direction={direction} onSort={onSort} /><SortHead label="货品成本" field="goods_cost" sort={sort} direction={direction} onSort={onSort} /><SortHead label="其他费用" field="other_fee" sort={sort} direction={direction} onSort={onSort} /><SortHead label="利润" field="profit" sort={sort} direction={direction} onSort={onSort} /></TableRow></TableHead>
+        <TableBody>{sorted.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.operating_cost), money(r.goods_cost), money(r.other_fee), money(r.profit)].map((x, j) => <TableCell key={j}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
     </Paper>}
   </>;
