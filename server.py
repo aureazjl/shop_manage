@@ -14,7 +14,9 @@ def db():
   c.execute('ALTER TABLE product_profit_daily RENAME TO product_profit_daily_old')
   c.execute('''CREATE TABLE product_profit_daily (id INTEGER PRIMARY KEY, stat_date TEXT NOT NULL, department TEXT, manager TEXT, promotion_leader TEXT, promotion_group TEXT, product_name TEXT NOT NULL, actual_sales REAL DEFAULT 0, operating_cost REAL DEFAULT 0, goods_cost REAL DEFAULT 0, express_fee REAL DEFAULT 0, onsite_promotion_fee REAL DEFAULT 0, pugongying_fee REAL DEFAULT 0, qianfan_fee REAL DEFAULT 0, content_comment_fee REAL DEFAULT 0, dou_plus_fee REAL DEFAULT 0, props_competitor_fee REAL DEFAULT 0, qa_fee REAL DEFAULT 0, member_fee REAL DEFAULT 0, other_fee REAL DEFAULT 0, profit REAL DEFAULT 0, source_sheet TEXT, source_hash TEXT, created_at TEXT, updated_at TEXT)''')
   c.execute('INSERT INTO product_profit_daily SELECT * FROM product_profit_daily_old'); c.execute('DROP TABLE product_profit_daily_old')
- c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, created_at TEXT NOT NULL)'''); c.execute('''CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL, created_at TEXT NOT NULL)'''); c.commit(); return c
+ c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, created_at TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'user')''');
+ if 'role' not in [row[1] for row in c.execute('PRAGMA table_info(users)').fetchall()]: c.execute("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'")
+ c.execute("UPDATE users SET role='admin' WHERE username='admin'"); c.execute('''CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL, created_at TEXT NOT NULL)'''); c.commit(); return c
 
 LOGIN_ATTEMPTS={}
 SESSION_DAYS=7
@@ -80,7 +82,7 @@ class Handler(SimpleHTTPRequestHandler):
   if path=='/api/auth/status':return self.send_json({'setup_required':c.execute('SELECT COUNT(*) FROM users').fetchone()[0]==0})
   if path=='/api/auth/me':
    user=session_user(c,self)
-   return self.send_json({'authenticated':bool(user),'user':{'id':user['id'],'username':user['username']} if user else None},200 if user else 401)
+   return self.send_json({'authenticated':bool(user),'user':{'id':user['id'],'username':user['username'],'role':user['role']} if user else None},200 if user else 401)
   if path.startswith('/api/') and not session_user(c,self):return self.send_json({'error':'请先登录'},401)
   if path=='/api/summary':
    from urllib.parse import parse_qs
@@ -97,7 +99,7 @@ class Handler(SimpleHTTPRequestHandler):
    try:data=json_body(self);username=str(data.get('username','')).strip();password=data.get('password','')
    except:return self.send_json({'error':'请求格式错误'},400)
    if len(username)<3 or len(username)>32 or not valid_password(password):return self.send_json({'error':'账号至少 3 位，密码至少 8 位'},400)
-   salt,hashed=password_hash(password);c.execute('INSERT INTO users(username,password_hash,password_salt,created_at) VALUES(?,?,?,?)',(username,hashed,salt,datetime.now().isoformat()));c.commit();return self.send_json({'ok':True})
+   salt,hashed=password_hash(password);c.execute('INSERT INTO users(username,password_hash,password_salt,created_at,role) VALUES(?,?,?,?,?)',(username,hashed,salt,datetime.now().isoformat(),'admin'));c.commit();return self.send_json({'ok':True})
   if path=='/api/auth/login':
    try:data=json_body(self);username=str(data.get('username','')).strip();password=data.get('password','')
    except:return self.send_json({'error':'请求格式错误'},400)
@@ -106,7 +108,7 @@ class Handler(SimpleHTTPRequestHandler):
    user=c.execute('SELECT * FROM users WHERE username=?',(username,)).fetchone();ok=False
    if user:ok=secrets.compare_digest(password_hash(password,user['password_salt'])[1],user['password_hash'])
    if not ok:LOGIN_ATTEMPTS[key]=attempts+[now];return self.send_json({'error':'账号或密码错误'},401)
-   token=secrets.token_urlsafe(32);expires=int(time.time()+SESSION_DAYS*86400);c.execute('INSERT INTO sessions(token_hash,user_id,expires_at,created_at) VALUES(?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),user['id'],expires,datetime.now().isoformat()));c.commit();self.send_response(200);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Set-Cookie',f'finance_session={token}; HttpOnly; SameSite=Lax; Max-Age={SESSION_DAYS*86400}; Path=/');self.send_header('Access-Control-Allow-Origin',self.headers.get('Origin','http://127.0.0.1:5173'));self.send_header('Access-Control-Allow-Credentials','true');self.end_headers();self.wfile.write(json.dumps({'ok':True,'user':{'username':user['username']}},ensure_ascii=False).encode());return
+   token=secrets.token_urlsafe(32);expires=int(time.time()+SESSION_DAYS*86400);c.execute('INSERT INTO sessions(token_hash,user_id,expires_at,created_at) VALUES(?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),user['id'],expires,datetime.now().isoformat()));c.commit();self.send_response(200);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Set-Cookie',f'finance_session={token}; HttpOnly; SameSite=Lax; Max-Age={SESSION_DAYS*86400}; Path=/');self.send_header('Access-Control-Allow-Origin',self.headers.get('Origin','http://127.0.0.1:5173'));self.send_header('Access-Control-Allow-Credentials','true');self.end_headers();self.wfile.write(json.dumps({'ok':True,'user':{'username':user['username'],'role':user['role']}},ensure_ascii=False).encode());return
   if path=='/api/auth/logout':
    user=session_user(c,self);cookie=self.headers.get('Cookie','');token=next((x.split('=',1)[1] for x in cookie.split(';') if x.strip().startswith('finance_session=')), '')
    if token:c.execute('DELETE FROM sessions WHERE token_hash=?',(hashlib.sha256(token.encode()).hexdigest(),));c.commit()
