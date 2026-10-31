@@ -11,10 +11,10 @@ export default function Dashboard() {
   const now = new Date();
   now.setDate(now.getDate() - 1);
   const pad = n => String(n).padStart(2, '0');
-  const month = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`, first = `${month}-01`, today = `${month}-${pad(now.getDate())}`;
-  const [d, setD] = React.useState(null), [start, setStart] = React.useState(first), [end, setEnd] = React.useState(today);
+  const yesterday = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const [d, setD] = React.useState(null), [start, setStart] = React.useState(yesterday), [end, setEnd] = React.useState(yesterday);
   const load = React.useCallback((a, b) => fetch(`${API}/api/summary?start_date=${a}&end_date=${b}`).then(r => r.json()).then(data => setD({ ...empty, ...data, summary: { ...empty.summary, ...(data.summary || {}) }, by_product: Array.isArray(data.by_product) ? data.by_product : [], by_department: Array.isArray(data.by_department) ? data.by_department : [] })).catch(() => setD(empty)), []);
-  React.useEffect(() => { load(first, today); }, [load, first, today]);
+  React.useEffect(() => { load(yesterday, yesterday); }, [load, yesterday]);
   const changeRange = (a, b) => { setStart(a); setEnd(b); if (a && b) load(a, b); };
   if (!d) return <Typography>正在加载数据库数据…</Typography>;
   const s = d.summary, max = Math.max(...d.by_product.map(x => x.profit), 1), departments = d.by_department.filter(x => x.revenue > 0);
