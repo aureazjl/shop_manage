@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, useMediaQuery } from '@mui/material';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, Button, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { API } from '../../App';
 import FinanceDateRange from '../../components/FinanceDateRange';
@@ -14,6 +14,7 @@ export default function ProfitTable() {
   const [department, setDepartment] = React.useState('');
   const [manager, setManager] = React.useState('');
   const [product, setProduct] = React.useState('');
+  const [showTable, setShowTable] = React.useState(false);
   const mobile = useMediaQuery(useTheme().breakpoints.down('sm'));
 
   React.useEffect(() => {
@@ -38,7 +39,10 @@ export default function ProfitTable() {
   const productRows = managerRows.filter(r => !manager || r.manager === manager);
 
   return <>
-    <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>利润表</Typography>
+    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+      <Typography variant="h4" fontWeight={700}>利润表</Typography>
+      {mobile && <Button size="small" variant="outlined" onClick={() => setShowTable(value => !value)}>{showTable ? '切换卡片' : '切换表格'}</Button>}
+    </Stack>
     <Paper sx={{ p: 2, mb: 2 }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} flexWrap="wrap" gap={1.5}>
         <FinanceDateRange start={start} end={end} onChange={(a, b) => { setStart(a); setEnd(b); }} />
@@ -53,7 +57,7 @@ export default function ProfitTable() {
         </TextField>
       </Stack>
     </Paper>
-    {mobile ? <Stack spacing={1.5}>
+    {mobile && !showTable ? <Stack spacing={1.5}>
       {Object.entries(grouped).map(([departmentName, departmentRows]) => <Box key={departmentName}>
         <Paper sx={{ p: 1.5 }}>
           <Typography variant="body1" fontWeight={800} color="primary.dark" sx={{ mb: 0.75 }}>{departmentName}</Typography>
