@@ -27,13 +27,9 @@ export default function MiniDrawer() {
   );
   const [open, setOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    const logout = async () => {
-      await fetch(`${API}/api/auth/logout`, { method: "POST", credentials: "include" });
-      window.location.reload();
-    };
-    window.addEventListener("finance:logout", logout);
-    return () => window.removeEventListener("finance:logout", logout);
+  const handleLogout = React.useCallback(async () => {
+    try { await fetch(`${API}/api/auth/logout`, { method: "POST", credentials: "include" }); }
+    finally { window.location.assign("/"); }
   }, []);
 
   const handleDrawerOpen = () => {
@@ -54,6 +50,7 @@ export default function MiniDrawer() {
           open={open}
           handleDrawerOpen={handleDrawerOpen}
           setMode={setMode}
+          onLogout={handleLogout}
         />}
         <SideBar open={open} handleDrawerClose={handleDrawerClose} handleDrawerOpen={handleDrawerOpen} />
 

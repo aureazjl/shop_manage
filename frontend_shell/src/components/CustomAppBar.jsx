@@ -34,7 +34,7 @@ const AppBar = styled(MuiAppBar, {
     },
   }),
 }));
-export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile }) {
+export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile, onLogout }) {
   const navigate = useNavigate();
   const [accountAnchor, setAccountAnchor] = React.useState(null);
   const accountOpen = Boolean(accountAnchor);
@@ -70,7 +70,7 @@ export default function CustomAppBar({ open, handleDrawerOpen, onHideMobile }) {
       </Toolbar>
       <Menu id="account-menu" anchorEl={accountAnchor} open={accountOpen} onClose={() => setAccountAnchor(null)} anchorOrigin={{ vertical: "bottom", horizontal: "right" }} transformOrigin={{ vertical: "top", horizontal: "right" }}>
         <MenuItem onClick={() => { setAccountAnchor(null); navigate("/profile"); }}>账户信息</MenuItem>
-        <MenuItem onClick={() => { setAccountAnchor(null); window.dispatchEvent(new Event("finance:logout")); }}>退出登录</MenuItem>
+        <MenuItem onClick={async () => { setAccountAnchor(null); await onLogout(); }}>退出登录</MenuItem>
       </Menu>
     </AppBar>
   );
