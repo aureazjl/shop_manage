@@ -183,9 +183,16 @@ class Handler(SimpleHTTPRequestHandler):
       product_name=str(r[5] or '').strip()
       if current_date and product_name and product_name not in ('产品名称','商品名称') and not any(x in product_name for x in ('合计','总计','小计')):values.append((current_date,r[1],r[2],r[3],r[4],product_name,*[num(x) for x in r[6:20]],'',h))
    c=db();now=datetime.now().isoformat();ins=upd=0
-   c.execute('DELETE FROM product_profit_daily WHERE source_hash=?',(h,))
+   key_cols=['stat_date','department','manager','promotion_leader','promotion_group','product_name']
+   update_cols=COLS[6:]+['source_sheet','source_hash','updated_at']
    for row in values:
-    full=row+(now,now);c.execute('INSERT INTO product_profit_daily ('+','.join(COLS)+',source_sheet,source_hash,created_at,updated_at) VALUES ('+','.join('?'*24)+')',full);ins+=1
+    row_values=dict(zip(COLS+['source_sheet','source_hash'],row)); key=tuple(row_values[k] for k in key_cols)
+    existing=c.execute('SELECT id FROM product_profit_daily WHERE '+ ' AND '.join(f'{k}=?' for k in key_cols),key).fetchone()
+    if existing:
+     assignments=','.join(f'{k}=?' for k in update_cols); values_to_update=[row_values[k] for k in update_cols[:-1]]+[now,existing['id']]
+     c.execute(f'UPDATE product_profit_daily SET {assignments} WHERE id=?',values_to_update);upd+=1
+    else:
+     full=row+(now,now);c.execute('INSERT INTO product_profit_daily ('+','.join(COLS)+',source_sheet,source_hash,created_at,updated_at) VALUES ('+','.join('?'*24)+')',full);ins+=1
    c.commit();return self.send_json({'inserted':ins,'updated':upd,'source_rows':len(values),'days':len(set(x[0] for x in values))})
   except Exception as e:return self.send_json({'error':str(e)},400)
 if __name__=='__main__':
