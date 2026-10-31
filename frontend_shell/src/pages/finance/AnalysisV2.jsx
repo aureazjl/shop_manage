@@ -325,21 +325,7 @@ export default function AnalysisV2() {
       });
   }, []);
   React.useEffect(() => {
-    fetch(`${API}/api/summary`)
-      .then((r) => r.json())
-      .then((all) => {
-        const latest = (all.rows || []).reduce(
-          (max, row) => (row.stat_date > max ? row.stat_date : max),
-          "",
-        );
-        if (latest) {
-          const chartStart = shiftDate(latest, -6);
-          setStart(latest);
-          setEnd(latest);
-          load(latest, latest, chartStart, latest);
-        }
-      })
-      .catch(() => setD({ rows: [] }));
+    load(first, today, shiftDate(today, -6), today);
   }, [load, first, today]);
   if (!d) return <Typography>正在加载产品分析…</Typography>;
   const data = d.rows || [],
