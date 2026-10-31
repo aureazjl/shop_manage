@@ -87,11 +87,6 @@ const Array1 = [
   },
 ];
 
-const Array2 = [
-  { text: "智能体分析（预留）", icon: <PieChartOutlineOutlinedIcon />, path: "/analysis" },
-];
-
-
 const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
   let location = useLocation();
   const navigate = useNavigate();
@@ -121,23 +116,6 @@ const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
           </ListItem>
         ))}
       </List>
-      <Divider />
-      <List>
-        {Array2.map((item) => (
-          <ListItem key={item.path} disablePadding sx={{ display: "block" }}>
-            <Tooltip title={open ? null : item.text} placement="left">
-              <ListItemButton
-                onClick={() => { navigate(item.path); if (isMobile) handleDrawerClose(); }}
-                sx={{ minHeight: 48, justifyContent: open ? "initial" : "center", px: 2.5,
-                  bgcolor: location.pathname === item.path ? (theme.palette.mode === "dark" ? grey[800] : grey[300]) : null }}
-              >
-                <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : "auto", justifyContent: "center" }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItemButton>
-            </Tooltip>
-          </ListItem>
-        ))}
-      </List>
     </>
   );
 
@@ -152,7 +130,7 @@ const SideBar = ({ open, handleDrawerClose, handleDrawerOpen }) => {
           <MenuOutlinedIcon />
         </IconButton>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, px: open ? 0.75 : 0, width: open ? "auto" : 0, maxWidth: open ? 310 : 0, overflow: "hidden", opacity: open ? 1 : 0, transform: open ? "translateX(0)" : "translateX(16px)", transition: "all 180ms ease", bgcolor: "background.paper", borderRadius: 3, boxShadow: 3 }}>
-          {[...Array1, ...Array2].map((item) => (
+          {Array1.map((item) => (
             <Tooltip key={item.path} title={item.text} placement="top">
               <IconButton
                 size="small"
