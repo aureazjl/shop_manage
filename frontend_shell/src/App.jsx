@@ -27,6 +27,15 @@ export default function MiniDrawer() {
   );
   const [open, setOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    const logout = async () => {
+      await fetch(`${API}/api/auth/logout`, { method: "POST", credentials: "include" });
+      window.location.reload();
+    };
+    window.addEventListener("finance:logout", logout);
+    return () => window.removeEventListener("finance:logout", logout);
+  }, []);
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };

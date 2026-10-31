@@ -1,9 +1,12 @@
+import * as React from "react";
 import {
   Toolbar,
   IconButton,
   Typography,
   Stack,
   Box,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
@@ -38,6 +41,8 @@ const AppBar = styled(MuiAppBar, {
 export default function CustomAppBar({ open, handleDrawerOpen, setMode, onHideMobile }) {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [accountAnchor, setAccountAnchor] = React.useState(null);
+  const accountOpen = Boolean(accountAnchor);
   return (
     <AppBar position="fixed" open={open}>
       <Toolbar sx={{ minHeight: { xs: 48, sm: 64 } }}>
@@ -97,11 +102,15 @@ export default function CustomAppBar({ open, handleDrawerOpen, setMode, onHideMo
           <IconButton color="inherit" onClick={onHideMobile} sx={{ display: { xs: "inline-flex", sm: "none" } }} aria-label="隐藏顶部导航">
             <VisibilityOffOutlinedIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={() => navigate("/profile")}>
+          <IconButton color="inherit" onClick={(event) => setAccountAnchor(event.currentTarget)} aria-label="账户菜单" aria-controls={accountOpen ? "account-menu" : undefined} aria-haspopup="true">
             <Person2OutlinedIcon />
           </IconButton>
         </Stack>
       </Toolbar>
+      <Menu id="account-menu" anchorEl={accountAnchor} open={accountOpen} onClose={() => setAccountAnchor(null)} anchorOrigin={{ vertical: "bottom", horizontal: "right" }} transformOrigin={{ vertical: "top", horizontal: "right" }}>
+        <MenuItem onClick={() => { setAccountAnchor(null); navigate("/profile"); }}>账户信息</MenuItem>
+        <MenuItem onClick={() => { setAccountAnchor(null); window.dispatchEvent(new Event("finance:logout")); }}>退出登录</MenuItem>
+      </Menu>
     </AppBar>
   );
 }
