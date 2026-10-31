@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem } from '@mui/material';
+import { Box, Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, TextField, Stack, MenuItem, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { API } from '../../App';
 import FinanceDateRange from '../../components/FinanceDateRange';
 
@@ -13,6 +14,7 @@ export default function ProfitTable() {
   const [department, setDepartment] = React.useState('');
   const [manager, setManager] = React.useState('');
   const [product, setProduct] = React.useState('');
+  const mobile = useMediaQuery(useTheme().breakpoints.down('sm'));
 
   React.useEffect(() => {
     fetch(API + '/api/profit-rows', { credentials: 'include' })
@@ -44,11 +46,25 @@ export default function ProfitTable() {
         </TextField>
       </Stack>
     </Paper>
-    <Paper sx={{ overflow: 'auto' }}>
+    {mobile ? <Stack spacing={1.25}>
+      {filtered.map((r, i) => <Paper key={i} sx={{ p: 1.75 }}>
+        <Stack direction="row" justifyContent="space-between" gap={1} sx={{ mb: 1 }}>
+          <Typography fontWeight={700} sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.product_name}</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>{r.stat_date}</Typography>
+        </Stack>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1, mb: 1.25 }}>
+          {[['部门', r.department || '—'], ['主管', r.manager || '—'], ['推广组长', r.promotion_leader || '—'], ['销售额', money(r.actual_sales)]].map(([label, value]) => <Box key={label}><Typography variant="caption" color="text.secondary">{label}</Typography><Typography variant="body2" fontWeight={label === '销售额' ? 700 : 500} noWrap>{value}</Typography></Box>)}
+        </Box>
+        <Stack direction="row" justifyContent="space-between" sx={{ pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary">利润</Typography>
+          <Typography variant="body2" fontWeight={700} color={r.profit < 0 ? 'error.main' : 'primary.main'}>{money(r.profit)}</Typography>
+        </Stack>
+      </Paper>)}
+    </Stack> : <Paper sx={{ overflow: 'auto' }}>
       <Table size="small" sx={{ minWidth: 1000 }}>
         <TableHead><TableRow>{['日期', '部门', '主管', '推广组长', '产品名称', '真实销售额', '运营成本', '货品成本', '其他费用', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
         <TableBody>{filtered.map((r, i) => <TableRow key={i} hover>{[r.stat_date, r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, money(r.actual_sales), money(r.operating_cost), money(r.goods_cost), money(r.other_fee), money(r.profit)].map((x, j) => <TableCell key={j}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
-    </Paper>
+    </Paper>}
   </>;
 }
