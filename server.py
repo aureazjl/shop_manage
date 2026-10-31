@@ -86,7 +86,9 @@ class Handler(SimpleHTTPRequestHandler):
    from urllib.parse import parse_qs
    query=parse_qs(urlparse(self.path).query); start=query.get('start_date',[''])[0]; end=query.get('end_date',['']); end=end[0] if end else ''
    return self.send_json(payload(c,start,end))
-  if path=='/api/profit-rows':return self.send_json({'rows':[dict(r) for r in c.execute('SELECT * FROM product_profit_daily ORDER BY stat_date DESC,id').fetchall()]})
+  if path=='/api/profit-rows':
+   fields='stat_date,department,manager,promotion_leader,product_name,actual_sales,operating_cost,goods_cost,other_fee,profit'
+   return self.send_json({'rows':[dict(r) for r in c.execute(f'SELECT {fields} FROM product_profit_daily ORDER BY stat_date DESC,id').fetchall()]})
   return super().do_GET()
  def do_POST(self):
   c=db();path=urlparse(self.path).path
