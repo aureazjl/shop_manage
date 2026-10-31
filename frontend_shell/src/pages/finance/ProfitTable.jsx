@@ -19,7 +19,7 @@ export default function ProfitTable() {
   const [department, setDepartment] = React.useState('');
   const [manager, setManager] = React.useState('');
   const [product, setProduct] = React.useState('');
-  const [showTable, setShowTable] = React.useState(false);
+  const [showTable, setShowTable] = React.useState(true);
   const [sort, setSort] = React.useState('stat_date');
   const [direction, setDirection] = React.useState('desc');
   const mobile = useMediaQuery(useTheme().breakpoints.down('sm'));
@@ -99,7 +99,7 @@ export default function ProfitTable() {
       </Box>)}
     </Stack> : mobile ? <Paper sx={{ overflow: 'hidden' }}>
       <Table size="small" sx={{ width: '100%', tableLayout: 'fixed', '& .MuiTableCell-root': { px: 0.6, py: 0.9, fontSize: 11, verticalAlign: 'top' }, '& .MuiTableCell-root:nth-of-type(1)': { width: 44 }, '& .MuiTableCell-root:nth-of-type(2)': { width: 48 }, '& .MuiTableCell-root:nth-of-type(3)': { width: 40 }, '& .MuiTableCell-root:nth-of-type(4)': { width: 48 }, '& .MuiTableCell-root:nth-of-type(5)': { width: 'auto' }, '& .MuiTableCell-root:nth-of-type(6)': { width: 58 }, '& .MuiTableCell-root:nth-of-type(7)': { width: 58 } }}>
-        <TableHead><TableRow>{['日期', '部门', '主管', '组长', '产品', '销售额', '利润'].map(x => <TableCell key={x}>{x}</TableCell>)}</TableRow></TableHead>
+        <TableHead><TableRow><SortHead label="日期" field="stat_date" sort={sort} direction={direction} onSort={onSort} /><SortHead label="部门" field="department" sort={sort} direction={direction} onSort={onSort} /><SortHead label="主管" field="manager" sort={sort} direction={direction} onSort={onSort} /><SortHead label="组长" field="promotion_leader" sort={sort} direction={direction} onSort={onSort} /><SortHead label="产品" field="product_name" sort={sort} direction={direction} onSort={onSort} /><SortHead label="销售额" field="actual_sales" sort={sort} direction={direction} onSort={onSort} /><SortHead label="利润" field="profit" sort={sort} direction={direction} onSort={onSort} /></TableRow></TableHead>
         <TableBody>{sorted.map((r, i) => <TableRow key={i} hover>{[shortDate(r.stat_date), r.department || '—', r.manager || '—', r.promotion_leader || '—', r.product_name, plainMoney(r.actual_sales), plainMoney(r.profit)].map((x, j) => <TableCell key={j} sx={{ wordBreak: j === 4 ? 'break-word' : 'normal' }}>{x}</TableCell>)}</TableRow>)}</TableBody>
       </Table>
     </Paper> : <Paper sx={{ overflow: 'auto' }}>
